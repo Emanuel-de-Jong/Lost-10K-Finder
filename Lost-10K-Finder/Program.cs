@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 
 namespace Lost_10K_Finder
 {
@@ -46,18 +47,28 @@ namespace Lost_10K_Finder
 
 
         /// <summary>
+        /// Get the map id lists from github and combine them.
         /// </summary>
         static List<string> GetKnownMapIds()
         {
-            return new();
+            string packMapIdsString = (new WebClient()).DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/PackMapIds.txt");
+            string[] packMapIds = packMapIdsString.Split("\n");
+
+            string uploadedMapIdsString = (new WebClient()).DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/UploadedMapIds.txt");
+            string[] uploadedMapIds = uploadedMapIdsString.Split("\n");
+
+            return uploadedMapIds.Union(packMapIds).ToList();
         }
 
 
         /// <summary>
+        /// Get the custom map names from github and combine them.
         /// </summary>
         static List<string> GetKnownCustomMapNames()
         {
-            return new();
+            string packCustomMapNamesString = (new WebClient()).DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/UploadedMapIds.txt");
+
+            return packCustomMapNamesString.Split("\n").ToList();
         }
 
 
