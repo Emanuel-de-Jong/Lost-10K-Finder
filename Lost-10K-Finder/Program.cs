@@ -199,7 +199,7 @@ namespace Lost_10K_Finder
         /// </summary>
         static void End(string message)
         {
-            Console.WriteLine(message);
+            Console.WriteLine("\n" + message);
             Console.Write("\nPress any key to exit...");
             Console.ReadKey();
 
