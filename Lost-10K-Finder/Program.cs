@@ -51,10 +51,22 @@ namespace Lost_10K_Finder
         /// </summary>
         static List<string> GetKnownMapIds()
         {
-            string packMapIdsString = (new WebClient()).DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/PackMapIds.txt");
-            string[] packMapIds = packMapIdsString.Split("\n");
+            WebClient webClient = new WebClient();
 
-            string uploadedMapIdsString = (new WebClient()).DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/UploadedMapIds.txt");
+            string packMapIdsString = "";
+            string uploadedMapIdsString = "";
+            try
+            {
+                packMapIdsString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/PackMapIds.txt");
+
+                uploadedMapIdsString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/UploadedMapIds.txt");
+            }
+            catch (Exception e)
+            {
+                End("Map ids couldn't be read from the server.\nPlease check your internet connection.");
+            }
+
+            string[] packMapIds = packMapIdsString.Split("\n");
             string[] uploadedMapIds = uploadedMapIdsString.Split("\n");
 
             return uploadedMapIds.Union(packMapIds).ToList();
@@ -66,7 +78,17 @@ namespace Lost_10K_Finder
         /// </summary>
         static List<string> GetKnownCustomMapNames()
         {
-            string packCustomMapNamesString = (new WebClient()).DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/UploadedMapIds.txt");
+            WebClient webClient = new WebClient();
+
+            string packCustomMapNamesString = "";
+            try
+            {
+                packCustomMapNamesString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/PackCustomMapNames.txt");
+            }
+            catch (Exception e)
+            {
+                End("Custom map names couldn't be read from the server.\nPlease check your internet connection.");
+            }
 
             return packCustomMapNamesString.Split("\n").ToList();
         }
