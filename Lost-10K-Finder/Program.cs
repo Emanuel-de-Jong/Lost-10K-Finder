@@ -162,14 +162,16 @@ namespace Lost_10K_Finder
         /// </summary>
         static bool IsValid10kOsuFile(string osuFilePath)
         {
-            string[] lines = File.ReadAllLines(osuFilePath);
+            StreamReader file = new StreamReader(osuFilePath);
+            string line;
 
-            // First get the needed data from the file
             string circleSizeLine = "";
             string versionLine = "";
-            int hitObjectCount = 0;
             bool hitObjectsStarted = false;
-            foreach (string line in lines)
+            int hitObjectCount = 0;
+
+            // Get the needed data from the file
+            while ((line = file.ReadLine()) != null)
             {
                 if (!hitObjectsStarted)
                 {
@@ -195,13 +197,15 @@ namespace Lost_10K_Finder
                 }
             }
 
-            // Then do the validation checks
+            // Check if it's 10k
             if (circleSizeLine != "CircleSize:10")
                 return false;
 
+            // Check if it's an automap convert
             if (versionLine.Contains("A10K"))
                 return false;
 
+            // Check if there are 10 or more hit objects
             if (hitObjectCount < 10)
                 return false;
 
