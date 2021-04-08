@@ -23,6 +23,9 @@ namespace Lost_10K_Finder
             string mapName;
             foreach (string mapPath in mapPaths)
             {
+                if (!Directory.Exists(mapPath))
+                    continue;
+
                 mapName = Path.GetFileName(mapPath);
 
                 // Only maps that are not known need to be checked
@@ -162,6 +165,9 @@ namespace Lost_10K_Finder
         /// </summary>
         static bool IsValid10kOsuFile(string osuFilePath)
         {
+            if (!File.Exists(osuFilePath))
+                return false;
+
             StreamReader file = new StreamReader(osuFilePath);
             int hitObjectCount = 0;
             int phase = 0;
