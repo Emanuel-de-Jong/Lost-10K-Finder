@@ -58,7 +58,6 @@ namespace Lost_10K_Finder
             try
             {
                 packMapIdsString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/PackMapIds.txt");
-
                 uploadedMapIdsString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/UploadedMapIds.txt");
             }
             catch (Exception e)
@@ -111,7 +110,7 @@ namespace Lost_10K_Finder
 
 
         /// <summary>
-        /// DSA
+        /// Check if the given map name is in the known ids or names already
         /// </summary>
         static bool IsKnownMap(string mapName, List<string> knownMapIds, List<string> knownCustomMapNames)
         {
