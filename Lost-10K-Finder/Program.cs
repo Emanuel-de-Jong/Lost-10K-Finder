@@ -15,6 +15,8 @@ namespace Lost_10K_Finder
 
             string songsPath = AskSongsPath();
 
+            Console.WriteLine("\nStarting search. This may take a while...");
+
             List<string> lost10kMapNames = new List<string>();
             string[] mapPaths = Directory.GetDirectories(songsPath);
             string[] osuFilePaths;
@@ -54,10 +56,12 @@ namespace Lost_10K_Finder
             WebClient webClient = new WebClient();
 
             string packMapIdsString = "";
+            string pendingMapIdsString = "";
             string uploadedMapIdsString = "";
             try
             {
                 packMapIdsString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/PackMapIds.txt");
+                pendingMapIdsString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/PendingMapIds.txt");
                 uploadedMapIdsString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/UploadedMapIds.txt");
             }
             catch (Exception e)
@@ -66,9 +70,10 @@ namespace Lost_10K_Finder
             }
 
             string[] packMapIds = packMapIdsString.Split('\n');
+            string[] pendingMapIds = pendingMapIdsString.Split('\n');
             string[] uploadedMapIds = uploadedMapIdsString.Split('\n');
 
-            return uploadedMapIds.Union(packMapIds).ToList();
+            return packMapIds.Union(pendingMapIds.Concat(uploadedMapIds)).ToList();
         }
 
 
@@ -80,16 +85,21 @@ namespace Lost_10K_Finder
             WebClient webClient = new WebClient();
 
             string packCustomMapNamesString = "";
+            string pendingCustomMapNamesString = "";
             try
             {
                 packCustomMapNamesString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/PackCustomMapNames.txt");
+                pendingCustomMapNamesString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/PendingCustomMapNames.txt");
             }
             catch (Exception e)
             {
                 End("Custom map names couldn't be read from the server.\nPlease check your internet connection.");
             }
 
-            return packCustomMapNamesString.Split('\n').ToList();
+            string[] packCustomMapNames = packCustomMapNamesString.Split('\n');
+            string[] pendingCustomMapNames = pendingCustomMapNamesString.Split('\n');
+
+            return packCustomMapNames.Union(pendingCustomMapNames).ToList();
         }
 
 
@@ -98,12 +108,12 @@ namespace Lost_10K_Finder
         /// </summary>
         static string AskSongsPath()
         {
-            Console.WriteLine("Please paste the path to your songs folder");
+            Console.WriteLine("Please paste the path to your songs folder and press enter.");
             Console.WriteLine(@"Normally it's at: C:\Users\YOURUSERNAME\AppData\Local\osu!\Songs");
             string songsPath = Console.ReadLine().Trim();
 
             if (!Directory.Exists(songsPath))
-                End("The path does not exist");
+                End("The path does not exist.");
 
             return songsPath;
         }
@@ -156,6 +166,7 @@ namespace Lost_10K_Finder
 
             // First get the needed data from the file
             string circleSizeLine = "";
+            string versionLine = "";
             int hitObjectCount = 0;
             bool hitObjectsStarted = false;
             foreach (string line in lines)
@@ -165,6 +176,10 @@ namespace Lost_10K_Finder
                     if (line.StartsWith("CircleSize:"))
                     {
                         circleSizeLine = line;
+                    }
+                    else if (line.StartsWith("Version:"))
+                    {
+                        versionLine = line;
                     }
                     else if (line == "[HitObjects]")
                     {
@@ -182,6 +197,9 @@ namespace Lost_10K_Finder
 
             // Then do the validation checks
             if (circleSizeLine != "CircleSize:10")
+                return false;
+
+            if (versionLine.Contains("A10K"))
                 return false;
 
             if (hitObjectCount < 10)
