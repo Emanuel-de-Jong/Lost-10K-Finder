@@ -163,53 +163,61 @@ namespace Lost_10K_Finder
         static bool IsValid10kOsuFile(string osuFilePath)
         {
             StreamReader file = new StreamReader(osuFilePath);
-            string line;
-
-            string circleSizeLine = "";
-            string versionLine = "";
-            bool hitObjectsStarted = false;
             int hitObjectCount = 0;
-
-            // Get the needed data from the file
+            int phase = 0;
+            string line;
             while ((line = file.ReadLine()) != null)
             {
-                if (!hitObjectsStarted)
+                // Check if it's mania
+                if (phase == 0)
+                {
+                    if (line.StartsWith("Mode:"))
+                    {
+                        if (line == "Mode: 3")
+                            phase++;
+                        else
+                            break;
+                    }
+                }
+                // Check if it's an automap convert
+                else if (phase == 1)
+                {
+                    if (line.StartsWith("Version:"))
+                    {
+                        if (!line.Contains("A10K"))
+                            phase++;
+                        else
+                            break;
+                    }
+                }
+                // Check if it's 10k
+                else if (phase == 2)
                 {
                     if (line.StartsWith("CircleSize:"))
                     {
-                        circleSizeLine = line;
-                    }
-                    else if (line.StartsWith("Version:"))
-                    {
-                        versionLine = line;
-                    }
-                    else if (line == "[HitObjects]")
-                    {
-                        hitObjectsStarted = true;
+                        if (line == "CircleSize:10")
+                            phase++;
+                        else
+                            break;
                     }
                 }
-                else
+                // Wait for hitobjects section
+                else if (phase == 3)
+                {
+                    if (line == "[HitObjects]")
+                        phase++;
+                }
+                // Check if there are 10 or more hit objects
+                else if (phase == 4)
                 {
                     hitObjectCount++;
 
                     if (hitObjectCount == 10)
-                        break;
+                        return true;
                 }
             }
 
-            // Check if it's 10k
-            if (circleSizeLine != "CircleSize:10")
-                return false;
-
-            // Check if it's an automap convert
-            if (versionLine.Contains("A10K"))
-                return false;
-
-            // Check if there are 10 or more hit objects
-            if (hitObjectCount < 10)
-                return false;
-
-            return true;
+            return false;
         }
 
 
