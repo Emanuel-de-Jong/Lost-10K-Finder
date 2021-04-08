@@ -65,8 +65,8 @@ namespace Lost_10K_Finder
                 End("Map ids couldn't be read from the server.\nPlease check your internet connection.");
             }
 
-            string[] packMapIds = packMapIdsString.Split("\n");
-            string[] uploadedMapIds = uploadedMapIdsString.Split("\n");
+            string[] packMapIds = packMapIdsString.Split('\n');
+            string[] uploadedMapIds = uploadedMapIdsString.Split('\n');
 
             return uploadedMapIds.Union(packMapIds).ToList();
         }
@@ -89,7 +89,7 @@ namespace Lost_10K_Finder
                 End("Custom map names couldn't be read from the server.\nPlease check your internet connection.");
             }
 
-            return packCustomMapNamesString.Split("\n").ToList();
+            return packCustomMapNamesString.Split('\n').ToList();
         }
 
 
