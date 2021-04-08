@@ -15,7 +15,7 @@ namespace Lost_10K_Finder
 
             string songsPath = AskSongsPath();
 
-            List<string> lost10kMapNames = new();
+            List<string> lost10kMapNames = new List<string>();
             string[] mapPaths = Directory.GetDirectories(songsPath);
             string[] osuFilePaths;
             string mapName;
