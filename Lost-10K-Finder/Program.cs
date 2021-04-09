@@ -50,30 +50,43 @@ namespace Lost_10K_Finder
             End(CreateEndMessage(lost10kMapNames));
         }
 
-
+        
+        static bool useServerMapLists = true;
         /// <summary>
         /// Get the map id lists from github and combine them.
         /// </summary>
         static List<string> GetKnownMapIds()
         {
-            WebClient webClient = new WebClient();
-
             string osuUploadedString = "";
             string searchUploadedString = "";
             string packRemovedString = "";
             string packUploadedString = "";
             string pendingRemovedString = "";
-            try
+
+            if (useServerMapLists)
             {
-                osuUploadedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/osu%20uploaded.txt");
-                searchUploadedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/search%20uploaded.txt");
-                packRemovedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pack%20removed.txt");
-                packUploadedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pack%20uploaded.txt");
-                pendingRemovedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pending%20removed.txt");
+                WebClient webClient = new WebClient();
+
+                try
+                {
+                    osuUploadedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/osu%20uploaded.txt");
+                    searchUploadedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/search%20uploaded.txt");
+                    packRemovedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pack%20removed.txt");
+                    packUploadedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pack%20uploaded.txt");
+                    pendingRemovedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pending%20removed.txt");
+                }
+                catch (Exception e)
+                {
+                    End("Map ids couldn't be read from the server.\nPlease check your internet connection.");
+                }
             }
-            catch (Exception e)
+            else
             {
-                End("Map ids couldn't be read from the server.\nPlease check your internet connection.");
+                osuUploadedString = File.ReadAllText(@"..\..\..\map lists\osu uploaded.txt");
+                searchUploadedString = File.ReadAllText(@"..\..\..\map lists\search uploaded.txt");
+                packRemovedString = File.ReadAllText(@"..\..\..\map lists\pack removed.txt");
+                packUploadedString = File.ReadAllText(@"..\..\..\map lists\pack uploaded.txt");
+                pendingRemovedString = File.ReadAllText(@"..\..\..\map lists\pending removed.txt");
             }
 
             string[] osuUploaded = osuUploadedString.Split('\n');
@@ -91,18 +104,27 @@ namespace Lost_10K_Finder
         /// </summary>
         static List<string> GetKnownCustomMapNames()
         {
-            WebClient webClient = new WebClient();
-
             string packCustomString = "";
             string pendingCustomString = "";
-            try
+
+            if (useServerMapLists)
             {
-                packCustomString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pack%20custom.txt");
-                pendingCustomString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pending%20custom.txt");
+                WebClient webClient = new WebClient();
+
+                try
+                {
+                    packCustomString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pack%20custom.txt");
+                    pendingCustomString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pending%20custom.txt");
+                }
+                catch (Exception e)
+                {
+                    End("Custom map names couldn't be read from the server.\nPlease check your internet connection.");
+                }
             }
-            catch (Exception e)
+            else
             {
-                End("Custom map names couldn't be read from the server.\nPlease check your internet connection.");
+                packCustomString = File.ReadAllText(@"..\..\..\map lists\pack custom.txt");
+                pendingCustomString = File.ReadAllText(@"..\..\..\map lists\pending custom.txt");
             }
 
             string[] packCustom = packCustomString.Split('\n');
