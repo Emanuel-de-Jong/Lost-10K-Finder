@@ -32,7 +32,7 @@ namespace Lost_10K_Finder
                 if (IsKnownMap(mapName, knownkMapIds, knownCustomMapNames))
                     continue;
 
-                osuFilePaths = Directory.GetFiles(mapPath, "*.osu");
+                osuFilePaths = Directory.GetFiles(mapPath, "*.osu", SearchOption.AllDirectories);
                 foreach (string osuFilePath in osuFilePaths)
                 {
                     // If a valid 10k osu file was found, add the map to 'lost10kMapNames' and stop checking the map's osu files
