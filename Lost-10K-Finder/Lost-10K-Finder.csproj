@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{1665E170-6DF3-4BF7-86B6-CC7252C1100D}</ProjectGuid>
+    <ProjectGuid>{7C0B46C6-EB8D-4F21-9576-84AB405DA2C3}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>Lost_10K_Finder</RootNamespace>
     <AssemblyName>Lost-10K-Finder</AssemblyName>
