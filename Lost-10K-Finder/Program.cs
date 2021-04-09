@@ -58,25 +58,31 @@ namespace Lost_10K_Finder
         {
             WebClient webClient = new WebClient();
 
-            string packMapIdsString = "";
-            string pendingMapIdsString = "";
-            string uploadedMapIdsString = "";
+            string osuUploadedString = "";
+            string searchUploadedString = "";
+            string packRemovedString = "";
+            string packUploadedString = "";
+            string pendingRemovedString = "";
             try
             {
-                packMapIdsString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/PackMapIds.txt");
-                pendingMapIdsString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/PendingMapIds.txt");
-                uploadedMapIdsString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/UploadedMapIds.txt");
+                osuUploadedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/osu%20uploaded.txt");
+                searchUploadedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/search%20uploaded.txt");
+                packRemovedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pack%20removed.txt");
+                packUploadedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pack%20uploaded.txt");
+                pendingRemovedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pending%20removed.txt");
             }
             catch (Exception e)
             {
                 End("Map ids couldn't be read from the server.\nPlease check your internet connection.");
             }
 
-            string[] packMapIds = packMapIdsString.Split('\n');
-            string[] pendingMapIds = pendingMapIdsString.Split('\n');
-            string[] uploadedMapIds = uploadedMapIdsString.Split('\n');
+            string[] osuUploaded = osuUploadedString.Split('\n');
+            string[] searchUploaded = searchUploadedString.Split('\n');
+            string[] packRemoved = packRemovedString.Split('\n');
+            string[] packUploaded = packUploadedString.Split('\n');
+            string[] pendingRemoved = pendingRemovedString.Split('\n');
 
-            return packMapIds.Union(pendingMapIds.Concat(uploadedMapIds)).ToList();
+            return osuUploaded.Union(searchUploaded.Concat(packRemoved).Concat(packUploaded).Concat(pendingRemoved)).ToList();
         }
 
 
@@ -87,22 +93,22 @@ namespace Lost_10K_Finder
         {
             WebClient webClient = new WebClient();
 
-            string packCustomMapNamesString = "";
-            string pendingCustomMapNamesString = "";
+            string packCustomString = "";
+            string pendingCustomString = "";
             try
             {
-                packCustomMapNamesString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/PackCustomMapNames.txt");
-                pendingCustomMapNamesString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/PendingCustomMapNames.txt");
+                packCustomString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pack%20custom.txt");
+                pendingCustomString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pending%20custom.txt");
             }
             catch (Exception e)
             {
                 End("Custom map names couldn't be read from the server.\nPlease check your internet connection.");
             }
 
-            string[] packCustomMapNames = packCustomMapNamesString.Split('\n');
-            string[] pendingCustomMapNames = pendingCustomMapNamesString.Split('\n');
+            string[] packCustom = packCustomString.Split('\n');
+            string[] pendingCustom = pendingCustomString.Split('\n');
 
-            return packCustomMapNames.Union(pendingCustomMapNames).ToList();
+            return packCustom.Union(pendingCustom).ToList();
         }
 
 
