@@ -92,7 +92,7 @@ namespace Lost_10K_Finder
                 pendingRemovedString = File.ReadAllText(@"..\..\..\map lists\pending removed.txt");
             }
 
-            string[] chimuUploaded = osuUploadedString.Split('\n');
+            string[] chimuUploaded = chimuUploadedString.Split('\n');
             string[] osuUploaded = osuUploadedString.Split('\n');
             string[] searchUploaded = searchUploadedString.Split('\n');
             string[] packRemoved = packRemovedString.Split('\n');
