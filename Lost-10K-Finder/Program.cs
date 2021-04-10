@@ -196,6 +196,10 @@ namespace Lost_10K_Finder
             if (!File.Exists(osuFilePath))
                 return false;
 
+            // Check if it's an automap convert
+            if (osuFilePath.EndsWith("a10.osu"))
+                return false;
+
             StreamReader file = new StreamReader(osuFilePath);
             int hitObjectCount = 0;
             int phase = 0;
@@ -213,19 +217,8 @@ namespace Lost_10K_Finder
                             break;
                     }
                 }
-                // Check if it's an automap convert
-                else if (phase == 1)
-                {
-                    if (line.StartsWith("Version:"))
-                    {
-                        if (!line.Contains("A10K"))
-                            phase++;
-                        else
-                            break;
-                    }
-                }
                 // Check if it's 10k
-                else if (phase == 2)
+                else if (phase == 1)
                 {
                     if (line.StartsWith("CircleSize:"))
                     {
@@ -236,13 +229,13 @@ namespace Lost_10K_Finder
                     }
                 }
                 // Wait for hitobjects section
-                else if (phase == 3)
+                else if (phase == 2)
                 {
                     if (line == "[HitObjects]")
                         phase++;
                 }
                 // Check if there are 10 or more hit objects
-                else if (phase == 4)
+                else if (phase == 3)
                 {
                     hitObjectCount++;
 
