@@ -57,6 +57,7 @@ namespace Lost_10K_Finder
         /// </summary>
         static List<string> GetKnownMapIds()
         {
+            string chimuUploadedString = "";
             string osuUploadedString = "";
             string searchUploadedString = "";
             string packRemovedString = "";
@@ -69,6 +70,7 @@ namespace Lost_10K_Finder
 
                 try
                 {
+                    chimuUploadedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/chimu%20uploaded.txt");
                     osuUploadedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/osu%20uploaded.txt");
                     searchUploadedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/search%20uploaded.txt");
                     packRemovedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pack%20removed.txt");
@@ -82,6 +84,7 @@ namespace Lost_10K_Finder
             }
             else
             {
+                chimuUploadedString = File.ReadAllText(@"..\..\..\map lists\chimu uploaded.txt");
                 osuUploadedString = File.ReadAllText(@"..\..\..\map lists\osu uploaded.txt");
                 searchUploadedString = File.ReadAllText(@"..\..\..\map lists\search uploaded.txt");
                 packRemovedString = File.ReadAllText(@"..\..\..\map lists\pack removed.txt");
@@ -89,13 +92,14 @@ namespace Lost_10K_Finder
                 pendingRemovedString = File.ReadAllText(@"..\..\..\map lists\pending removed.txt");
             }
 
+            string[] chimuUploaded = osuUploadedString.Split('\n');
             string[] osuUploaded = osuUploadedString.Split('\n');
             string[] searchUploaded = searchUploadedString.Split('\n');
             string[] packRemoved = packRemovedString.Split('\n');
             string[] packUploaded = packUploadedString.Split('\n');
             string[] pendingRemoved = pendingRemovedString.Split('\n');
 
-            return osuUploaded.Union(searchUploaded.Concat(packRemoved).Concat(packUploaded).Concat(pendingRemoved)).ToList();
+            return chimuUploaded.Union(osuUploaded.Concat(searchUploaded).Concat(packRemoved).Concat(packUploaded).Concat(pendingRemoved)).ToList();
         }
 
 
