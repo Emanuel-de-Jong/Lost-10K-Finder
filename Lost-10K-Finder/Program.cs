@@ -159,15 +159,15 @@ namespace Lost_10K_Finder
         /// </summary>
         static bool IsKnownMap(string mapName, List<string> knownMapIds, List<string> knownCustomMapNames)
         {
-            if (!Char.IsDigit(mapName[0]))
+            string mapId = GetMapIdFromName(mapName);
+
+            if (mapId.Length < 6)
             {
                 if (knownCustomMapNames.Contains(mapName))
                     return true;
             }
             else
             {
-                string mapId = GetMapIdFromName(mapName);
-
                 if (knownMapIds.Contains(mapId))
                     return true;
             }
