@@ -163,7 +163,10 @@ namespace Lost_10K_Finder
 
             if (mapId.Length < 6)
             {
-                if (knownCustomMapNames.Contains(mapName))
+                if (knownCustomMapNames.Contains(mapName) ||
+                    knownCustomMapNames.Contains(mapName + " (1)") ||
+                    knownCustomMapNames.Contains(mapName.Replace(" ", "_")) ||
+                    knownCustomMapNames.Contains(mapName.Replace("_", " ")))
                     return true;
             }
             else
