@@ -17,13 +17,17 @@ namespace Lost_10K_Finder
 
             Console.WriteLine("\nStarting search. This may take a while...");
 
-            List<string> lost10kMapNames = new List<string>();
-            string[] mapPaths = Directory.GetDirectories(songsPath);
+            List<string> lost10kMapPaths = new List<string>();
+            string[] mapPaths = Directory.GetDirectories(songsPath, "*", SearchOption.AllDirectories);
             string[] osuFilePaths;
             string mapName;
             foreach (string mapPath in mapPaths)
             {
                 if (!Directory.Exists(mapPath))
+                    continue;
+
+                osuFilePaths = Directory.GetFiles(mapPath, "*.osu");
+                if (osuFilePaths.Length == 0)
                     continue;
 
                 mapName = Path.GetFileName(mapPath);
@@ -32,22 +36,21 @@ namespace Lost_10K_Finder
                 if (IsKnownMap(mapName, knownkMapIds, knownCustomMapNames))
                     continue;
 
-                osuFilePaths = Directory.GetFiles(mapPath, "*.osu", SearchOption.AllDirectories);
                 foreach (string osuFilePath in osuFilePaths)
                 {
-                    // If a valid 10k osu file was found, add the map to 'lost10kMapNames' and stop checking the map's osu files
+                    // If a valid 10k osu file was found, add the map to 'lost10kMapPaths' and stop checking the map's osu files
                     if (IsValid10kOsuFile(osuFilePath))
                     {
-                        lost10kMapNames.Add(mapName);
+                        lost10kMapPaths.Add(mapPath.Substring(songsPath.Length + 1));
                         break;
                     }
                 }
             }
 
-            if (lost10kMapNames.Count != 0)
-                File.WriteAllLines("lost maps.txt", lost10kMapNames);
+            if (lost10kMapPaths.Count != 0)
+                File.WriteAllLines("lost maps.txt", lost10kMapPaths);
 
-            End(CreateEndMessage(lost10kMapNames));
+            End(CreateEndMessage(lost10kMapPaths));
         }
 
         
@@ -161,7 +164,7 @@ namespace Lost_10K_Finder
         {
             string mapId = GetMapIdFromName(mapName);
 
-            if (mapId.Length < 6)
+            if (mapId.Length < 5)
             {
                 if (knownCustomMapNames.Contains(mapName) ||
                     knownCustomMapNames.Contains(mapName + " (1)") ||
@@ -259,18 +262,18 @@ namespace Lost_10K_Finder
         /// Tells the user if any maps were found.
         /// And if so, which ones and where to find them.
         /// </summary>
-        static string CreateEndMessage(List<string> lost10kMapNames)
+        static string CreateEndMessage(List<string> lost10kMapPaths)
         {
             string endMessage;
-            if (lost10kMapNames.Count == 0)
+            if (lost10kMapPaths.Count == 0)
             {
                 endMessage = "No lost maps were found";
             }
             else
             {
                 endMessage = "The following lost maps were found:\n";
-                foreach (string mapName in lost10kMapNames)
-                    endMessage += mapName + "\n";
+                foreach (string mapPath in lost10kMapPaths)
+                    endMessage += mapPath + "\n";
 
                 endMessage += "\nThis list can also be found in \"lost maps.txt\"";
             }
