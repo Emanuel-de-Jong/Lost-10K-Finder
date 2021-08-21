@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace Lost_10K_Finder
 {
@@ -157,6 +158,10 @@ namespace Lost_10K_Finder
         }
 
 
+        // Check for " " + ("[no video]" || "(digit)")
+        // Every " " can be an "_"
+        // Do this check 1..* times
+        static Regex filterName = new Regex(@"([ _](\[no[ _]video\]|\([0-9]+\)))+", RegexOptions.Compiled);
         /// <summary>
         /// Check if the given map name is in the known ids or names already
         /// </summary>
@@ -166,10 +171,11 @@ namespace Lost_10K_Finder
 
             if (mapId.Length < 5)
             {
-                if (knownCustomMapNames.Contains(mapName) ||
-                    knownCustomMapNames.Contains(mapName + " (1)") ||
-                    knownCustomMapNames.Contains(mapName.Replace(" ", "_")) ||
-                    knownCustomMapNames.Contains(mapName.Replace("_", " ")))
+                Match match = filterName.Match(mapName);
+                if (match.Success)
+                    mapName = mapName.Replace(match.Value, "");
+
+                if (knownCustomMapNames.Contains(mapName) || knownCustomMapNames.Contains(mapName.Replace("_", " ")))
                     return true;
             }
             else
