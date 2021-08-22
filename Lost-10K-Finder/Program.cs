@@ -12,7 +12,7 @@ namespace Lost_10K_Finder
         static void Main(string[] args)
         {
             List<string> knownkMapIds = GetKnownMapIds();
-            List<string> knownCustomMapNames = GetKnownCustomMapNames();
+            List<string> knownMapNames = GetKnownMapNames();
 
             string songsPath = AskSongsPath();
 
@@ -34,7 +34,7 @@ namespace Lost_10K_Finder
                 mapName = Path.GetFileName(mapPath);
 
                 // Only maps that are not known need to be checked
-                if (IsKnownMap(mapName, knownkMapIds, knownCustomMapNames))
+                if (IsKnownMap(mapName, knownkMapIds, knownMapNames))
                     continue;
 
                 foreach (string osuFilePath in osuFilePaths)
@@ -61,12 +61,11 @@ namespace Lost_10K_Finder
         /// </summary>
         static List<string> GetKnownMapIds()
         {
-            string chimuUploadedString = "";
-            string osuUploadedString = "";
-            string searchUploadedString = "";
-            string packRemovedString = "";
-            string packUploadedString = "";
-            string pendingRemovedString = "";
+            string osuStr = "";
+            string packStr = "";
+            string pendingStr = "";
+            string removedStr = "";
+            string searchStr = "";
 
             if (useServerMapLists)
             {
@@ -74,12 +73,11 @@ namespace Lost_10K_Finder
 
                 try
                 {
-                    chimuUploadedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/chimu%20uploaded.txt");
-                    osuUploadedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/osu%20uploaded.txt");
-                    searchUploadedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/search%20uploaded.txt");
-                    packRemovedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pack%20removed.txt");
-                    packUploadedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pack%20uploaded.txt");
-                    pendingRemovedString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pending%20removed.txt");
+                    osuStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/osu%20ids.txt");
+                    packStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pack%20ids.txt");
+                    pendingStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pending%20ids.txt");
+                    removedStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/removed%20ids.txt");
+                    searchStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/search%20ids.txt");
                 }
                 catch (Exception e)
                 {
@@ -88,32 +86,33 @@ namespace Lost_10K_Finder
             }
             else
             {
-                chimuUploadedString = File.ReadAllText(@"..\..\..\map lists\chimu uploaded.txt");
-                osuUploadedString = File.ReadAllText(@"..\..\..\map lists\osu uploaded.txt");
-                searchUploadedString = File.ReadAllText(@"..\..\..\map lists\search uploaded.txt");
-                packRemovedString = File.ReadAllText(@"..\..\..\map lists\pack removed.txt");
-                packUploadedString = File.ReadAllText(@"..\..\..\map lists\pack uploaded.txt");
-                pendingRemovedString = File.ReadAllText(@"..\..\..\map lists\pending removed.txt");
+                osuStr = File.ReadAllText(@"..\..\..\map lists\osu ids.txt");
+                packStr = File.ReadAllText(@"..\..\..\map lists\pack ids.txt");
+                pendingStr = File.ReadAllText(@"..\..\..\map lists\pending ids.txt");
+                removedStr = File.ReadAllText(@"..\..\..\map lists\removed ids.txt");
+                searchStr = File.ReadAllText(@"..\..\..\map lists\search ids.txt");
             }
 
-            string[] chimuUploaded = chimuUploadedString.Split('\n');
-            string[] osuUploaded = osuUploadedString.Split('\n');
-            string[] searchUploaded = searchUploadedString.Split('\n');
-            string[] packRemoved = packRemovedString.Split('\n');
-            string[] packUploaded = packUploadedString.Split('\n');
-            string[] pendingRemoved = pendingRemovedString.Split('\n');
+            string[] osu = osuStr.Split('\n');
+            string[] pack = packStr.Split('\n');
+            string[] pending = pendingStr.Split('\n');
+            string[] removed = removedStr.Split('\n');
+            string[] search = searchStr.Split('\n');
 
-            return chimuUploaded.Union(osuUploaded.Concat(searchUploaded).Concat(packRemoved).Concat(packUploaded).Concat(pendingRemoved)).ToList();
+            return osu.Union(pack.Concat(pending).Concat(removed).Concat(search)).ToList();
         }
 
 
         /// <summary>
-        /// Get the custom map names from github and combine them.
+        /// Get the map names from github and combine them.
         /// </summary>
-        static List<string> GetKnownCustomMapNames()
+        static List<string> GetKnownMapNames()
         {
-            string packCustomString = "";
-            string pendingCustomString = "";
+            string osuStr = "";
+            string packStr = "";
+            string pendingStr = "";
+            string removedStr = "";
+            string searchStr = "";
 
             if (useServerMapLists)
             {
@@ -121,24 +120,33 @@ namespace Lost_10K_Finder
 
                 try
                 {
-                    packCustomString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pack%20custom.txt");
-                    pendingCustomString = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pending%20custom.txt");
+                    osuStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/osu%20names.txt");
+                    packStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pack%20names.txt");
+                    pendingStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pending%20names.txt");
+                    removedStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/removed%20names.txt");
+                    searchStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/search%20names.txt");
                 }
                 catch (Exception e)
                 {
-                    End("Custom map names couldn't be read from the server.\nPlease check your internet connection.");
+                    End("Map names couldn't be read from the server.\nPlease check your internet connection.");
                 }
             }
             else
             {
-                packCustomString = File.ReadAllText(@"..\..\..\map lists\pack custom.txt");
-                pendingCustomString = File.ReadAllText(@"..\..\..\map lists\pending custom.txt");
+                osuStr = File.ReadAllText(@"..\..\..\map lists\osu names.txt");
+                packStr = File.ReadAllText(@"..\..\..\map lists\pack names.txt");
+                pendingStr = File.ReadAllText(@"..\..\..\map lists\pending names.txt");
+                removedStr = File.ReadAllText(@"..\..\..\map lists\removed names.txt");
+                searchStr = File.ReadAllText(@"..\..\..\map lists\search names.txt");
             }
 
-            string[] packCustom = packCustomString.Split('\n');
-            string[] pendingCustom = pendingCustomString.Split('\n');
+            string[] osu = osuStr.Split('\n');
+            string[] pack = packStr.Split('\n');
+            string[] pending = pendingStr.Split('\n');
+            string[] removed = removedStr.Split('\n');
+            string[] search = searchStr.Split('\n');
 
-            return packCustom.Union(pendingCustom).ToList();
+            return osu.Union(pack.Concat(pending).Concat(removed).Concat(search)).ToList();
         }
 
 
@@ -165,7 +173,7 @@ namespace Lost_10K_Finder
         /// <summary>
         /// Check if the given map name is in the known ids or names already
         /// </summary>
-        static bool IsKnownMap(string mapName, List<string> knownMapIds, List<string> knownCustomMapNames)
+        static bool IsKnownMap(string mapName, List<string> knownMapIds, List<string> knownMapNames)
         {
             string mapId = GetMapIdFromName(mapName);
 
@@ -175,10 +183,10 @@ namespace Lost_10K_Finder
                 if (match.Success)
                     mapName = mapName.Replace(match.Value, "");
 
-                if (knownCustomMapNames.Contains(mapName) ||
-                        knownCustomMapNames.Contains(mapName + "[no video]") ||
-                        knownCustomMapNames.Contains(mapName.Replace("_", " ")) ||
-                        knownCustomMapNames.Contains(mapName.Replace("_", " ") + "[no video]"))
+                if (knownMapNames.Contains(mapName) ||
+                        knownMapNames.Contains(mapName + "[no video]") ||
+                        knownMapNames.Contains(mapName.Replace("_", " ")) ||
+                        knownMapNames.Contains(mapName.Replace("_", " ") + "[no video]"))
                     return true;
             }
             else
