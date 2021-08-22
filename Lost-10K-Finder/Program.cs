@@ -175,7 +175,10 @@ namespace Lost_10K_Finder
                 if (match.Success)
                     mapName = mapName.Replace(match.Value, "");
 
-                if (knownCustomMapNames.Contains(mapName) || knownCustomMapNames.Contains(mapName.Replace("_", " ")))
+                if (knownCustomMapNames.Contains(mapName) ||
+                        knownCustomMapNames.Contains(mapName + "[no video]") ||
+                        knownCustomMapNames.Contains(mapName.Replace("_", " ")) ||
+                        knownCustomMapNames.Contains(mapName.Replace("_", " ") + "[no video]"))
                     return true;
             }
             else
