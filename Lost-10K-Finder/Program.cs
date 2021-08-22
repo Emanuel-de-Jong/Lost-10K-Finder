@@ -25,7 +25,10 @@ namespace Lost_10K_Finder
             foreach (string mapPath in mapPaths)
             {
                 if (!Directory.Exists(mapPath))
+                {
+                    Console.WriteLine("This folder name is too long: " + mapPath);
                     continue;
+                }
 
                 osuFilePaths = Directory.GetFiles(mapPath, "*.osu");
                 if (osuFilePaths.Length == 0)
@@ -221,7 +224,10 @@ namespace Lost_10K_Finder
         static bool IsValid10kOsuFile(string osuFilePath)
         {
             if (!File.Exists(osuFilePath))
+            {
+                Console.WriteLine("This filename is too long: " + osuFilePath);
                 return false;
+            }
 
             // Check if it's an automap convert
             if (osuFilePath.EndsWith("a10.osu"))
