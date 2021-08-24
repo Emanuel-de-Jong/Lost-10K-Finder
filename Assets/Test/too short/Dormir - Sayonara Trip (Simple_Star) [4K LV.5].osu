@@ -1,0 +1,76 @@
+osu file format v12
+
+[General]
+AudioFilename: Sayonara Trip.mp3
+AudioLeadIn: 0
+PreviewTime: 59198
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.7
+Mode: 3
+LetterboxInBreaks: 0
+SpecialStyle: 0
+WidescreenStoryboard: 0
+
+[Editor]
+DistanceSpacing: 1.2
+BeatDivisor: 2
+GridSize: 8
+
+[Metadata]
+Title:Sayonara Trip
+TitleUnicode:さよならトリップ
+Artist:Dormir
+ArtistUnicode:Dormir
+Creator:Simple_Star
+Version:4K LV.5
+Source:jubeat
+Tags:victorica_db
+BeatmapID:280680
+BeatmapSetID:106740
+
+[Difficulty]
+HPDrainRate:6
+CircleSize:10
+OverallDifficulty:6
+ApproachRate:5
+SliderMultiplier:1.4
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"BG.png",0,0
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,163,162,255
+
+[TimingPoints]
+8672,451.127819548872,4,2,0,50,1,0
+59198,-100,4,2,0,50,0,1
+73634,-100,4,2,0,50,0,0
+88070,-100,4,2,0,50,0,1
+102506,-100,4,2,0,50,0,0
+
+
+[HitObjects]
+320,192,1453,1,0,0:0:0:0:
+448,192,1905,1,0,0:0:0:0:
+192,192,2356,1,0,0:0:0:0:
+320,192,2807,1,0,0:0:0:0:
+192,192,3258,1,0,0:0:0:0:
+64,192,3709,1,0,0:0:0:0:
+320,192,4160,1,0,0:0:0:0:
+448,192,4611,1,0,0:0:0:0:
+320,192,5062,1,0,0:0:0:0:
+64,192,5514,1,0,0:0:0:0:
+192,192,5965,1,0,0:0:0:0:
+320,192,6416,1,0,0:0:0:0:
+192,192,6867,1,0,0:0:0:0:
+448,192,7318,1,0,0:0:0:0:
+192,192,7769,1,0,0:0:0:0:
+320,192,8220,1,0,0:0:0:0:
