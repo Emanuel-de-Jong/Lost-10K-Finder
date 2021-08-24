@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Lost_10K_Finder
@@ -13,6 +15,7 @@ namespace Lost_10K_Finder
         {
             List<string> knownkMapIds = GetKnownMapIds();
             List<string> knownMapNames = GetKnownMapNames();
+            List<string> knownMapHashes = GetKnownMapHashes();
 
             string songsPath = AskSongsPath();
 
@@ -21,7 +24,6 @@ namespace Lost_10K_Finder
             List<string> lost10kMapPaths = new List<string>();
             string[] mapPaths = Directory.GetDirectories(songsPath, "*", SearchOption.AllDirectories);
             string[] osuFilePaths;
-            string mapName;
             foreach (string mapPath in mapPaths)
             {
                 if (!Directory.Exists(mapPath))
@@ -34,10 +36,8 @@ namespace Lost_10K_Finder
                 if (osuFilePaths.Length == 0)
                     continue;
 
-                mapName = Path.GetFileName(mapPath);
-
                 // Only maps that are not known need to be checked
-                if (IsKnownMap(mapName, knownkMapIds, knownMapNames))
+                if (IsKnownMap(mapPath, knownkMapIds, knownMapNames, knownMapHashes))
                     continue;
 
                 foreach (string osuFilePath in osuFilePaths)
@@ -65,9 +65,6 @@ namespace Lost_10K_Finder
         static List<string> GetKnownMapIds()
         {
             string osuStr = "";
-            string packStr = "";
-            string pendingStr = "";
-            string removedStr = "";
             string searchStr = "";
 
             if (useServerMapLists)
@@ -77,12 +74,9 @@ namespace Lost_10K_Finder
                 try
                 {
                     osuStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/osu%20ids.txt");
-                    packStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pack%20ids.txt");
-                    pendingStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pending%20ids.txt");
-                    removedStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/removed%20ids.txt");
                     searchStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/search%20ids.txt");
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
                     End("Map ids couldn't be read from the server.\nPlease check your internet connection.");
                 }
@@ -90,19 +84,13 @@ namespace Lost_10K_Finder
             else
             {
                 osuStr = File.ReadAllText(@"..\..\..\map lists\osu ids.txt");
-                packStr = File.ReadAllText(@"..\..\..\map lists\pack ids.txt");
-                pendingStr = File.ReadAllText(@"..\..\..\map lists\pending ids.txt");
-                removedStr = File.ReadAllText(@"..\..\..\map lists\removed ids.txt");
                 searchStr = File.ReadAllText(@"..\..\..\map lists\search ids.txt");
             }
 
             string[] osu = osuStr.Split('\n');
-            string[] pack = packStr.Split('\n');
-            string[] pending = pendingStr.Split('\n');
-            string[] removed = removedStr.Split('\n');
             string[] search = searchStr.Split('\n');
 
-            return osu.Union(pack.Concat(pending).Concat(removed).Concat(search)).ToList();
+            return osu.Union(search).ToList();
         }
 
 
@@ -112,9 +100,6 @@ namespace Lost_10K_Finder
         static List<string> GetKnownMapNames()
         {
             string osuStr = "";
-            string packStr = "";
-            string pendingStr = "";
-            string removedStr = "";
             string searchStr = "";
 
             if (useServerMapLists)
@@ -124,12 +109,9 @@ namespace Lost_10K_Finder
                 try
                 {
                     osuStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/osu%20names.txt");
-                    packStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pack%20names.txt");
-                    pendingStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pending%20names.txt");
-                    removedStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/removed%20names.txt");
                     searchStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/search%20names.txt");
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
                     End("Map names couldn't be read from the server.\nPlease check your internet connection.");
                 }
@@ -137,19 +119,51 @@ namespace Lost_10K_Finder
             else
             {
                 osuStr = File.ReadAllText(@"..\..\..\map lists\osu names.txt");
-                packStr = File.ReadAllText(@"..\..\..\map lists\pack names.txt");
-                pendingStr = File.ReadAllText(@"..\..\..\map lists\pending names.txt");
-                removedStr = File.ReadAllText(@"..\..\..\map lists\removed names.txt");
                 searchStr = File.ReadAllText(@"..\..\..\map lists\search names.txt");
             }
 
             string[] osu = osuStr.Split('\n');
-            string[] pack = packStr.Split('\n');
-            string[] pending = pendingStr.Split('\n');
-            string[] removed = removedStr.Split('\n');
             string[] search = searchStr.Split('\n');
 
-            return osu.Union(pack.Concat(pending).Concat(removed).Concat(search)).ToList();
+            return osu.Union(search).ToList();
+        }
+
+        /// <summary>
+        /// Get the map hashes from github and combine them.
+        /// </summary>
+        static List<string> GetKnownMapHashes()
+        {
+            string packStr = "";
+            string pendingStr = "";
+            string rejectedStr = "";
+
+            if (useServerMapLists)
+            {
+                WebClient webClient = new WebClient();
+
+                try
+                {
+                    packStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pack%20hash.txt");
+                    pendingStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pending%20hash.txt");
+                    rejectedStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/rejected%20hash.txt");
+                }
+                catch (Exception ex)
+                {
+                    End("Map hashes couldn't be read from the server.\nPlease check your internet connection.");
+                }
+            }
+            else
+            {
+                packStr = File.ReadAllText(@"..\..\..\map lists\pack hashes.txt");
+                pendingStr = File.ReadAllText(@"..\..\..\map lists\pending hashes.txt");
+                rejectedStr = File.ReadAllText(@"..\..\..\map lists\removed hashes.txt");
+            }
+
+            string[] pack = packStr.Split('\n');
+            string[] pending = pendingStr.Split('\n');
+            string[] rejected = rejectedStr.Split('\n');
+
+            return pack.Union(pending.Concat(rejected)).ToList();
         }
 
 
@@ -176,11 +190,20 @@ namespace Lost_10K_Finder
         /// <summary>
         /// Check if the given map name is in the known ids or names already
         /// </summary>
-        static bool IsKnownMap(string mapName, List<string> knownMapIds, List<string> knownMapNames)
+        static bool IsKnownMap(string mapPath, List<string> knownMapIds, List<string> knownMapNames, List<string> knownMapHashes)
         {
+            string mapName = Path.GetFileName(mapPath);
             string mapId = GetMapIdFromName(mapName);
 
-            if (mapId.Length < 5)
+            if (mapId.Length >= 5 && knownMapIds.Contains(mapId))
+            {
+                return true;
+            }
+            else if (knownMapHashes.Contains(GetDirHash(mapPath)))
+            {
+                return true;
+            }
+            else
             {
                 Match match = filterName.Match(mapName);
                 if (match.Success)
@@ -190,11 +213,6 @@ namespace Lost_10K_Finder
                         knownMapNames.Contains(mapName + "[no video]") ||
                         knownMapNames.Contains(mapName.Replace("_", " ")) ||
                         knownMapNames.Contains(mapName.Replace("_", " ") + "[no video]"))
-                    return true;
-            }
-            else
-            {
-                if (knownMapIds.Contains(mapId))
                     return true;
             }
 
@@ -215,6 +233,28 @@ namespace Lost_10K_Finder
             }
 
             return mapId;
+        }
+
+
+        static string GetDirHash(string path)
+        {
+            string[] filePaths = Directory.GetFiles(path, "*.osu").OrderBy(p => p).ToArray();
+
+            using (var hasher = MD5.Create())
+            {
+                foreach (var filePath in filePaths)
+                {
+                    byte[] pathBytes = Encoding.UTF8.GetBytes(filePath.Substring(path.Length + 1));
+                    hasher.TransformBlock(pathBytes, 0, pathBytes.Length, pathBytes, 0);
+
+                    byte[] contentBytes = File.ReadAllBytes(filePath);
+                    hasher.TransformBlock(contentBytes, 0, contentBytes.Length, contentBytes, 0);
+                }
+
+                hasher.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+
+                return BitConverter.ToString(hasher.Hash).Replace("-", "");
+            }
         }
 
 
