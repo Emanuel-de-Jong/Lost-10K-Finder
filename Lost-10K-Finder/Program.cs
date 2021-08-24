@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -23,7 +24,6 @@ namespace Lost_10K_Finder
 
             List<string> lost10kMapPaths = new List<string>();
             string[] mapPaths = Directory.GetDirectories(songsPath, "*", SearchOption.AllDirectories);
-            string[] osuFilePaths;
             foreach (string mapPath in mapPaths)
             {
                 if (!Directory.Exists(mapPath))
@@ -32,7 +32,7 @@ namespace Lost_10K_Finder
                     continue;
                 }
 
-                osuFilePaths = Directory.GetFiles(mapPath, "*.osu");
+                string[] osuFilePaths = Directory.GetFiles(mapPath, "*.osu");
                 if (osuFilePaths.Length == 0)
                     continue;
 
@@ -143,9 +143,9 @@ namespace Lost_10K_Finder
 
                 try
                 {
-                    packStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pack%20hash.txt");
-                    pendingStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pending%20hash.txt");
-                    rejectedStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/rejected%20hash.txt");
+                    packStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pack%20hashes.txt");
+                    pendingStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pending%20hashes.txt");
+                    rejectedStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/rejected%20hashes.txt");
                 }
                 catch (Exception ex)
                 {
@@ -195,26 +195,26 @@ namespace Lost_10K_Finder
             string mapName = Path.GetFileName(mapPath);
             string mapId = GetMapIdFromName(mapName);
 
-            if (mapId.Length >= 5 && knownMapIds.Contains(mapId))
+            if (mapId.Length >= 5)
             {
-                return true;
-            }
-            else if (knownMapHashes.Contains(GetDirHash(mapPath)))
-            {
-                return true;
+                // Check id
+                if (knownMapIds.Contains(mapId))
+                    return true;
             }
             else
             {
+                // Check name
                 Match match = filterName.Match(mapName);
                 if (match.Success)
                     mapName = mapName.Replace(match.Value, "");
 
-                if (knownMapNames.Contains(mapName) ||
-                        knownMapNames.Contains(mapName + "[no video]") ||
-                        knownMapNames.Contains(mapName.Replace("_", " ")) ||
-                        knownMapNames.Contains(mapName.Replace("_", " ") + "[no video]"))
+                if (knownMapNames.Contains(mapName) || knownMapNames.Contains(mapName.Replace("_", " ")))
                     return true;
             }
+
+            // Check hash
+            if (Directory.Exists(mapPath) && knownMapHashes.Contains(GetDirHash(mapPath)))
+                return true;
 
             return false;
         }
@@ -242,8 +242,11 @@ namespace Lost_10K_Finder
 
             using (var hasher = MD5.Create())
             {
-                foreach (var filePath in filePaths)
+                foreach (string filePath in filePaths)
                 {
+                    if (!File.Exists(filePath))
+                        continue;
+
                     byte[] pathBytes = Encoding.UTF8.GetBytes(filePath.Substring(path.Length + 1));
                     hasher.TransformBlock(pathBytes, 0, pathBytes.Length, pathBytes, 0);
 
