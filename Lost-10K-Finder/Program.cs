@@ -14,9 +14,9 @@ namespace Lost_10K_Finder
     {
         static void Main(string[] args)
         {
-            List<string> knownkMapIds = GetKnownMapIds();
-            List<string> knownMapNames = GetKnownMapNames();
-            List<string> knownMapHashes = GetKnownMapHashes();
+            List<string> knownkMapIds = GetKnownMaps(new string[] { "osu-ids", "search-ids" });
+            List<string> knownMapNames = GetKnownMaps(new string[] { "osu-names", "search-names" });
+            List<string> knownMapHashes = GetKnownMaps(new string[] { "pack-hashes", "rejected-hashes", "pending-hashes" });
 
             string songsPath = AskSongsPath();
 
@@ -60,110 +60,43 @@ namespace Lost_10K_Finder
         
         static bool useServerMapLists = true;
         /// <summary>
-        /// Get the map id lists from github and combine them.
+        /// Get the given lists from github and combine them.
         /// </summary>
-        static List<string> GetKnownMapIds()
+        static List<string> GetKnownMaps(string[] lists)
         {
-            string osuStr = "";
-            string searchStr = "";
+            string[] listStrings = new string[lists.Length];
 
             if (useServerMapLists)
             {
                 WebClient webClient = new WebClient();
 
-                try
+                for (int i = 0; i < lists.Length; i++)
                 {
-                    osuStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/osu%20ids.txt");
-                    searchStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/search%20ids.txt");
-                }
-                catch (Exception ex)
-                {
-                    End("Map ids couldn't be read from the server.\nPlease check your internet connection.");
-                }
-            }
-            else
-            {
-                osuStr = File.ReadAllText(@"..\..\..\map lists\osu ids.txt");
-                searchStr = File.ReadAllText(@"..\..\..\map lists\search ids.txt");
-            }
-
-            string[] osu = osuStr.Split('\n');
-            string[] search = searchStr.Split('\n');
-
-            return osu.Union(search).ToList();
-        }
-
-
-        /// <summary>
-        /// Get the map names from github and combine them.
-        /// </summary>
-        static List<string> GetKnownMapNames()
-        {
-            string osuStr = "";
-            string searchStr = "";
-
-            if (useServerMapLists)
-            {
-                WebClient webClient = new WebClient();
-
-                try
-                {
-                    osuStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/osu%20names.txt");
-                    searchStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/search%20names.txt");
-                }
-                catch (Exception ex)
-                {
-                    End("Map names couldn't be read from the server.\nPlease check your internet connection.");
+                    try
+                    {
+                        listStrings[i] = webClient.DownloadString($"https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/{ lists[i] }.txt");
+                    }
+                    catch (Exception ex)
+                    {
+                        End(lists[i] + " couldn't be read from the server.\nPlease check your internet connection.");
+                    }
                 }
             }
             else
             {
-                osuStr = File.ReadAllText(@"..\..\..\map lists\osu names.txt");
-                searchStr = File.ReadAllText(@"..\..\..\map lists\search names.txt");
-            }
-
-            string[] osu = osuStr.Split('\n');
-            string[] search = searchStr.Split('\n');
-
-            return osu.Union(search).ToList();
-        }
-
-        /// <summary>
-        /// Get the map hashes from github and combine them.
-        /// </summary>
-        static List<string> GetKnownMapHashes()
-        {
-            string packStr = "";
-            string pendingStr = "";
-            string rejectedStr = "";
-
-            if (useServerMapLists)
-            {
-                WebClient webClient = new WebClient();
-
-                try
+                for (int i = 0; i < lists.Length; i++)
                 {
-                    packStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pack%20hashes.txt");
-                    pendingStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/pending%20hashes.txt");
-                    rejectedStr = webClient.DownloadString("https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/rejected%20hashes.txt");
-                }
-                catch (Exception ex)
-                {
-                    End("Map hashes couldn't be read from the server.\nPlease check your internet connection.");
+                    listStrings[i] = File.ReadAllText($@"..\..\..\map lists\{ lists[i] }.txt");
                 }
             }
-            else
+
+            HashSet<string> knownMaps = new HashSet<string>();
+            for (int i = 0; i < listStrings.Length; i++)
             {
-                packStr = File.ReadAllText(@"..\..\..\map lists\pack hashes.txt");
-                pendingStr = File.ReadAllText(@"..\..\..\map lists\pending hashes.txt");
-                rejectedStr = File.ReadAllText(@"..\..\..\map lists\removed hashes.txt");
+                knownMaps.Concat(listStrings[i].Split('\n'));
             }
 
-            string[] pack = packStr.Split('\n');
-            string[] pending = pendingStr.Split('\n');
-            string[] rejected = rejectedStr.Split('\n');
-
-            return pack.Union(pending.Concat(rejected)).ToList();
+            return knownMaps.ToList();
         }
 
 
@@ -261,6 +194,7 @@ namespace Lost_10K_Finder
         }
 
 
+        static Regex checkAutomap = new Regex(@".osu.a[0-9]+.osu$", RegexOptions.Compiled);
         /// <summary>
         /// Validates the given file on if it is 10k and if it has HitObjects.
         /// </summary>
@@ -273,13 +207,13 @@ namespace Lost_10K_Finder
             }
 
             // Check if it's an automap convert
-            if (osuFilePath.EndsWith("a10.osu"))
+            if (checkAutomap.IsMatch(osuFilePath))
                 return false;
 
             StreamReader file = new StreamReader(osuFilePath);
-            int hitObjectCount = 0;
             int phase = 0;
             string line;
+            int firstTime = 0;
             while ((line = file.ReadLine()) != null)
             {
                 // Check if it's mania
@@ -313,9 +247,23 @@ namespace Lost_10K_Finder
                 // Check if there are 10 or more hit objects
                 else if (phase == 3)
                 {
-                    hitObjectCount++;
+                    if (line == "")
+                        break;
 
-                    if (hitObjectCount == 10)
+                    if (!int.TryParse(line.Split(',')[2], out firstTime))
+                        continue;
+
+                    phase++;
+                }
+                else if (phase == 4)
+                {
+                    if (line == "")
+                        break;
+
+                    if (!int.TryParse(line.Split(',')[2], out int time))
+                        continue;
+
+                    if ((time - firstTime) >= 15000)
                         return true;
                 }
             }
