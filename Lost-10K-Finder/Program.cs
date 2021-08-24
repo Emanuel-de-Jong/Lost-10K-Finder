@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -12,7 +11,7 @@ namespace Lost_10K_Finder
 {
     class Program
     {
-        enum KnownMapsType
+        private enum KnownMapsType
         {
             Id,
             Name,
@@ -20,8 +19,8 @@ namespace Lost_10K_Finder
         }
 
 
-        static Regex checkAutomap = new Regex(@".osu.a[0-9]+.osu$", RegexOptions.Compiled);
-        static void Main(string[] args)
+        private static readonly Regex checkAutomap = new Regex(@".osu.[0-9]*a[0-9]+.osu$", RegexOptions.Compiled);
+        private static void Main(string[] args)
         {
             Console.Write("Downloading lists of known map ids, names and hashes... ");
             List<string> knownkMapIds = GetKnownMaps(new string[] { "osu-ids", "search-ids" }, KnownMapsType.Id);
@@ -53,7 +52,7 @@ namespace Lost_10K_Finder
                         Console.WriteLine("This filename is too long: " + filePath);
                         continue;
                     }
-                    
+
                     osuFilePaths.Add(filePath);
                 }
 
@@ -77,12 +76,12 @@ namespace Lost_10K_Finder
             End(CreateEndMessage(lost10kMapPaths));
         }
 
-        
-        static bool useServerMapLists = true;
+
+        private static readonly bool useServerMapLists = true;
         /// <summary>
         /// Get the given lists from github and combine them.
         /// </summary>
-        static List<string> GetKnownMaps(string[] lists, KnownMapsType knownMapsType)
+        private static List<string> GetKnownMaps(string[] lists, KnownMapsType knownMapsType)
         {
             string[] listStrings = new string[lists.Length];
 
@@ -96,7 +95,7 @@ namespace Lost_10K_Finder
                     {
                         listStrings[i] = webClient.DownloadString($"https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/{ lists[i] }.txt");
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         End($"\n{ lists[i] } couldn't be read from the server.\nPlease check your internet connection.");
                     }
@@ -131,7 +130,7 @@ namespace Lost_10K_Finder
         /// Check if the program is in the songs folder
         /// Otherwise ask the user for the path to their songs forlder
         /// </summary>
-        static string GetSongsPath()
+        private static string GetSongsPath()
         {
             string currentDir = Directory.GetCurrentDirectory();
 
@@ -160,11 +159,11 @@ namespace Lost_10K_Finder
         // Check for " " + ("[no video]" || "(digit)")
         // Every " " can be an "_"
         // Do this check 1..* times
-        static Regex filterName = new Regex(@"([ _](\[no[ _]video\]|\([0-9]+\)))+", RegexOptions.Compiled);
+        private static readonly Regex filterName = new Regex(@"([ _](\[no[ _]video\]|\([0-9]+\)))+", RegexOptions.Compiled);
         /// <summary>
         /// Check if the given map is uploaded, in the pack, or rejected already
         /// </summary>
-        static bool IsKnownMap(string mapPath, List<string> osuFilePaths, List<string> knownMapIds, List<string> knownMapNames, List<string> knownMapHashes)
+        private static bool IsKnownMap(string mapPath, List<string> osuFilePaths, List<string> knownMapIds, List<string> knownMapNames, List<string> knownMapHashes)
         {
             string mapName = Path.GetFileName(mapPath);
             string mapId = GetMapIdFromName(mapName);
@@ -194,13 +193,13 @@ namespace Lost_10K_Finder
         }
 
 
-        static string GetMapIdFromName(string mapName)
+        private static string GetMapIdFromName(string mapName)
         {
             string mapId = "";
 
             foreach (char c in mapName)
             {
-                if (!Char.IsDigit(c))
+                if (!char.IsDigit(c))
                     break;
 
                 mapId += c;
@@ -213,11 +212,11 @@ namespace Lost_10K_Finder
         /// <summary>
         /// Make a MD5 hash from the osu files of a map
         /// </summary>
-        static string GetDirHash(string mapPath, List<string> osuFilePaths)
+        private static string GetDirHash(string mapPath, List<string> osuFilePaths)
         {
             osuFilePaths = osuFilePaths.OrderBy(p => p).ToList();
 
-            using (var hasher = MD5.Create())
+            using (MD5 hasher = MD5.Create())
             {
                 foreach (string osuFilePath in osuFilePaths)
                 {
@@ -238,7 +237,7 @@ namespace Lost_10K_Finder
         /// <summary>
         /// Check if one of the given osu files is valid and 10k
         /// </summary>
-        static bool HasValid10kOsuFile(List<string> osuFilePaths)
+        private static bool HasValid10kOsuFile(List<string> osuFilePaths)
         {
             foreach (string osuFilePath in osuFilePaths)
             {
@@ -309,7 +308,7 @@ namespace Lost_10K_Finder
         /// Tell the user if any maps were found
         /// And if so, which ones and where to find them
         /// </summary>
-        static string CreateEndMessage(List<string> lost10kMapPaths)
+        private static string CreateEndMessage(List<string> lost10kMapPaths)
         {
             string endMessage;
             if (lost10kMapPaths.Count == 0)
@@ -320,7 +319,9 @@ namespace Lost_10K_Finder
             {
                 endMessage = "The following lost maps were found:\n";
                 foreach (string mapPath in lost10kMapPaths)
+                {
                     endMessage += mapPath + "\n";
+                }
 
                 endMessage += "\nThis list can also be found in \"lost maps.txt\"";
             }
@@ -332,7 +333,7 @@ namespace Lost_10K_Finder
         /// <summary>
         /// Display the given message and wait for any input before closing the program
         /// </summary>
-        static void End(string message)
+        private static void End(string message)
         {
             Console.WriteLine(message);
             Console.Write("\nPress any key to exit...");
