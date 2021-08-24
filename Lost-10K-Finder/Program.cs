@@ -23,14 +23,14 @@ namespace Lost_10K_Finder
         static Regex checkAutomap = new Regex(@".osu.a[0-9]+.osu$", RegexOptions.Compiled);
         static void Main(string[] args)
         {
-            Console.WriteLine("\nDownloading lists of known map ids, names and hashes...");
+            Console.Write("Downloading lists of known map ids, names and hashes... ");
             List<string> knownkMapIds = GetKnownMaps(new string[] { "osu-ids", "search-ids" }, KnownMapsType.Id);
             List<string> knownMapNames = GetKnownMaps(new string[] { "osu-names", "search-names" }, KnownMapsType.Name);
             List<string> knownMapHashes = GetKnownMaps(new string[] { "pack-hashes", "rejected-hashes", "pending-hashes" }, KnownMapsType.Hash);
+            Console.WriteLine("complete\n");
 
-            string songsPath = AskSongsPath();
-
-            Console.WriteLine("\nSearching... This may take a while");
+            string songsPath = GetSongsPath();
+            Console.WriteLine();
 
             List<string> lost10kMapPaths = new List<string>();
             string[] mapPaths = Directory.GetDirectories(songsPath, "*", SearchOption.AllDirectories);
@@ -60,13 +60,14 @@ namespace Lost_10K_Finder
                 if (osuFilePaths.Count == 0)
                     continue;
 
-                Console.WriteLine(mapPath);
+                string mapName = mapPath.Substring(songsPath.Length + 1);
+                Console.WriteLine(mapName);
 
                 if (!HasValid10kOsuFile(osuFilePaths))
                     continue;
 
                 if (!IsKnownMap(mapPath, osuFilePaths, knownkMapIds, knownMapNames, knownMapHashes))
-                    lost10kMapPaths.Add(mapPath.Substring(songsPath.Length + 1));
+                    lost10kMapPaths.Add(mapName);
             }
 
             if (lost10kMapPaths.Count != 0)
@@ -97,7 +98,7 @@ namespace Lost_10K_Finder
                     }
                     catch (Exception ex)
                     {
-                        End(lists[i] + " couldn't be read from the server.\nPlease check your internet connection.");
+                        End($"\n{ lists[i] } couldn't be read from the server.\nPlease check your internet connection.");
                     }
                 }
             }
@@ -127,18 +128,32 @@ namespace Lost_10K_Finder
 
 
         /// <summary>
-        /// Ask the user for the path to their songs forlder
+        /// Check if the program is in the songs folder
+        /// Otherwise ask the user for the path to their songs forlder
         /// </summary>
-        static string AskSongsPath()
+        static string GetSongsPath()
         {
-            Console.WriteLine("Please paste the path to your songs folder and press enter.");
-            Console.WriteLine(@"Normally it's at: C:\Users\YOURUSERNAME\AppData\Local\osu!\Songs");
-            string songsPath = Console.ReadLine().Trim();
+            string currentDir = Directory.GetCurrentDirectory();
 
-            if (!Directory.Exists(songsPath))
-                End("The path does not exist.");
+            if (currentDir.EndsWith(@"\osu!\Songs"))
+            {
+                Console.Write("\nPress any key to start searching...");
+                Console.ReadKey();
 
-            return songsPath;
+                return currentDir;
+            }
+            else
+            {
+                Console.WriteLine("Please paste the path to your songs folder and press enter.");
+                Console.WriteLine(@"Normally it's at: C:\Users\YOURUSERNAME\AppData\Local\osu!\Songs");
+                Console.Write("Path: ");
+                string songsPath = Console.ReadLine().Trim();
+
+                if (!Directory.Exists(songsPath))
+                    End("The path does not exist.");
+
+                return songsPath;
+            }
         }
 
 
@@ -172,7 +187,7 @@ namespace Lost_10K_Finder
             }
 
             // Check hash
-            if (Directory.Exists(mapPath) && knownMapHashes.Contains(GetDirHash(mapPath, osuFilePaths)))
+            if (knownMapHashes.Contains(GetDirHash(mapPath, osuFilePaths)))
                 return true;
 
             return false;
@@ -319,7 +334,7 @@ namespace Lost_10K_Finder
         /// </summary>
         static void End(string message)
         {
-            Console.WriteLine("\n" + message);
+            Console.WriteLine(message);
             Console.Write("\nPress any key to exit...");
             Console.ReadKey();
 
