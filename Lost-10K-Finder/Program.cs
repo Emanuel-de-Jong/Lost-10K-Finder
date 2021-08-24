@@ -12,11 +12,17 @@ namespace Lost_10K_Finder
 {
     class Program
     {
+        enum KnownMapsType
+        {
+            Id,
+            Name,
+            Hash
+        }
         static void Main(string[] args)
         {
-            List<string> knownkMapIds = GetKnownMaps(new string[] { "osu-ids", "search-ids" });
-            List<string> knownMapNames = GetKnownMaps(new string[] { "osu-names", "search-names" });
-            List<string> knownMapHashes = GetKnownMaps(new string[] { "pack-hashes", "rejected-hashes", "pending-hashes" });
+            List<string> knownkMapIds = GetKnownMaps(new string[] { "osu-ids", "search-ids" }, KnownMapsType.Id);
+            List<string> knownMapNames = GetKnownMaps(new string[] { "osu-names", "search-names" }, KnownMapsType.Name);
+            List<string> knownMapHashes = GetKnownMaps(new string[] { "pack-hashes", "rejected-hashes", "pending-hashes" }, KnownMapsType.Hash);
 
             string songsPath = AskSongsPath();
 
@@ -62,7 +68,7 @@ namespace Lost_10K_Finder
         /// <summary>
         /// Get the given lists from github and combine them.
         /// </summary>
-        static List<string> GetKnownMaps(string[] lists)
+        static List<string> GetKnownMaps(string[] lists, KnownMapsType knownMapsType)
         {
             string[] listStrings = new string[lists.Length];
 
@@ -93,7 +99,14 @@ namespace Lost_10K_Finder
             HashSet<string> knownMaps = new HashSet<string>();
             for (int i = 0; i < listStrings.Length; i++)
             {
-                knownMaps.Concat(listStrings[i].Split('\n'));
+                foreach (string line in listStrings[i].Split('\n'))
+                {
+                    string fixedLine = line;
+                    if (knownMapsType == KnownMapsType.Hash)
+                        fixedLine = line.Split(' ')[0];
+
+                    knownMaps.Add(fixedLine);
+                }
             }
 
             return knownMaps.ToList();
@@ -169,6 +182,7 @@ namespace Lost_10K_Finder
         }
 
 
+        static Regex checkAutomap = new Regex(@".osu.a[0-9]+.osu$", RegexOptions.Compiled);
         static string GetDirHash(string path)
         {
             string[] filePaths = Directory.GetFiles(path, "*.osu").OrderBy(p => p).ToArray();
@@ -178,6 +192,10 @@ namespace Lost_10K_Finder
                 foreach (string filePath in filePaths)
                 {
                     if (!File.Exists(filePath))
+                        continue;
+
+                    // Check if it's an automap convert
+                    if (checkAutomap.IsMatch(filePath))
                         continue;
 
                     byte[] pathBytes = Encoding.UTF8.GetBytes(filePath.Substring(path.Length + 1));
@@ -194,7 +212,6 @@ namespace Lost_10K_Finder
         }
 
 
-        static Regex checkAutomap = new Regex(@".osu.a[0-9]+.osu$", RegexOptions.Compiled);
         /// <summary>
         /// Validates the given file on if it is 10k and if it has HitObjects.
         /// </summary>
