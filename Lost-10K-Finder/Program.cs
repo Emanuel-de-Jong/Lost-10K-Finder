@@ -18,15 +18,19 @@ namespace Lost_10K_Finder
             Name,
             Hash
         }
+
+
+        static Regex checkAutomap = new Regex(@".osu.a[0-9]+.osu$", RegexOptions.Compiled);
         static void Main(string[] args)
         {
+            Console.WriteLine("\nDownloading lists of known map ids, names and hashes...");
             List<string> knownkMapIds = GetKnownMaps(new string[] { "osu-ids", "search-ids" }, KnownMapsType.Id);
             List<string> knownMapNames = GetKnownMaps(new string[] { "osu-names", "search-names" }, KnownMapsType.Name);
             List<string> knownMapHashes = GetKnownMaps(new string[] { "pack-hashes", "rejected-hashes", "pending-hashes" }, KnownMapsType.Hash);
 
             string songsPath = AskSongsPath();
 
-            Console.WriteLine("\nStarting search. This may take a while...");
+            Console.WriteLine("\nSearching... This may take a while");
 
             List<string> lost10kMapPaths = new List<string>();
             string[] mapPaths = Directory.GetDirectories(songsPath, "*", SearchOption.AllDirectories);
@@ -38,28 +42,37 @@ namespace Lost_10K_Finder
                     continue;
                 }
 
-                string[] osuFilePaths = Directory.GetFiles(mapPath, "*.osu");
-                if (osuFilePaths.Length == 0)
-                    continue;
-
-                // Only maps that are not known need to be checked
-                if (IsKnownMap(mapPath, knownkMapIds, knownMapNames, knownMapHashes))
-                    continue;
-
-                foreach (string osuFilePath in osuFilePaths)
+                List<string> osuFilePaths = new List<string>();
+                foreach (string filePath in Directory.GetFiles(mapPath, "*.osu"))
                 {
-                    // If a valid 10k osu file was found, add the map to 'lost10kMapPaths' and stop checking the map's osu files
-                    if (IsValid10kOsuFile(osuFilePath))
+                    if (checkAutomap.IsMatch(filePath))
+                        continue;
+
+                    if (!File.Exists(filePath))
                     {
-                        lost10kMapPaths.Add(mapPath.Substring(songsPath.Length + 1));
-                        break;
+                        Console.WriteLine("This filename is too long: " + filePath);
+                        continue;
                     }
+                    
+                    osuFilePaths.Add(filePath);
                 }
+
+                if (osuFilePaths.Count == 0)
+                    continue;
+
+                Console.WriteLine(mapPath);
+
+                if (!HasValid10kOsuFile(osuFilePaths))
+                    continue;
+
+                if (!IsKnownMap(mapPath, osuFilePaths, knownkMapIds, knownMapNames, knownMapHashes))
+                    lost10kMapPaths.Add(mapPath.Substring(songsPath.Length + 1));
             }
 
             if (lost10kMapPaths.Count != 0)
                 File.WriteAllLines("lost maps.txt", lost10kMapPaths);
 
+            Console.Clear();
             End(CreateEndMessage(lost10kMapPaths));
         }
 
@@ -114,7 +127,7 @@ namespace Lost_10K_Finder
 
 
         /// <summary>
-        /// Asks the user for the path to their songs forlder and returns it if it exists.
+        /// Ask the user for the path to their songs forlder
         /// </summary>
         static string AskSongsPath()
         {
@@ -134,9 +147,9 @@ namespace Lost_10K_Finder
         // Do this check 1..* times
         static Regex filterName = new Regex(@"([ _](\[no[ _]video\]|\([0-9]+\)))+", RegexOptions.Compiled);
         /// <summary>
-        /// Check if the given map name is in the known ids or names already
+        /// Check if the given map is uploaded, in the pack, or rejected already
         /// </summary>
-        static bool IsKnownMap(string mapPath, List<string> knownMapIds, List<string> knownMapNames, List<string> knownMapHashes)
+        static bool IsKnownMap(string mapPath, List<string> osuFilePaths, List<string> knownMapIds, List<string> knownMapNames, List<string> knownMapHashes)
         {
             string mapName = Path.GetFileName(mapPath);
             string mapId = GetMapIdFromName(mapName);
@@ -159,7 +172,7 @@ namespace Lost_10K_Finder
             }
 
             // Check hash
-            if (Directory.Exists(mapPath) && knownMapHashes.Contains(GetDirHash(mapPath)))
+            if (Directory.Exists(mapPath) && knownMapHashes.Contains(GetDirHash(mapPath, osuFilePaths)))
                 return true;
 
             return false;
@@ -182,26 +195,21 @@ namespace Lost_10K_Finder
         }
 
 
-        static Regex checkAutomap = new Regex(@".osu.a[0-9]+.osu$", RegexOptions.Compiled);
-        static string GetDirHash(string path)
+        /// <summary>
+        /// Make a MD5 hash from the osu files of a map
+        /// </summary>
+        static string GetDirHash(string mapPath, List<string> osuFilePaths)
         {
-            string[] filePaths = Directory.GetFiles(path, "*.osu").OrderBy(p => p).ToArray();
+            osuFilePaths = osuFilePaths.OrderBy(p => p).ToList();
 
             using (var hasher = MD5.Create())
             {
-                foreach (string filePath in filePaths)
+                foreach (string osuFilePath in osuFilePaths)
                 {
-                    if (!File.Exists(filePath))
-                        continue;
-
-                    // Check if it's an automap convert
-                    if (checkAutomap.IsMatch(filePath))
-                        continue;
-
-                    byte[] pathBytes = Encoding.UTF8.GetBytes(filePath.Substring(path.Length + 1));
+                    byte[] pathBytes = Encoding.UTF8.GetBytes(osuFilePath.Substring(mapPath.Length + 1));
                     hasher.TransformBlock(pathBytes, 0, pathBytes.Length, pathBytes, 0);
 
-                    byte[] contentBytes = File.ReadAllBytes(filePath);
+                    byte[] contentBytes = File.ReadAllBytes(osuFilePath);
                     hasher.TransformBlock(contentBytes, 0, contentBytes.Length, contentBytes, 0);
                 }
 
@@ -213,75 +221,68 @@ namespace Lost_10K_Finder
 
 
         /// <summary>
-        /// Validates the given file on if it is 10k and if it has HitObjects.
+        /// Check if one of the given osu files is valid and 10k
         /// </summary>
-        static bool IsValid10kOsuFile(string osuFilePath)
+        static bool HasValid10kOsuFile(List<string> osuFilePaths)
         {
-            if (!File.Exists(osuFilePath))
+            foreach (string osuFilePath in osuFilePaths)
             {
-                Console.WriteLine("This filename is too long: " + osuFilePath);
-                return false;
-            }
-
-            // Check if it's an automap convert
-            if (checkAutomap.IsMatch(osuFilePath))
-                return false;
-
-            StreamReader file = new StreamReader(osuFilePath);
-            int phase = 0;
-            string line;
-            int firstTime = 0;
-            while ((line = file.ReadLine()) != null)
-            {
-                // Check if it's mania
-                if (phase == 0)
+                StreamReader file = new StreamReader(osuFilePath);
+                int phase = 0;
+                string line;
+                int firstTime = 0;
+                while ((line = file.ReadLine()) != null)
                 {
-                    if (line.StartsWith("Mode:"))
+                    // Check if it's mania
+                    if (phase == 0)
                     {
-                        if (line == "Mode: 3")
-                            phase++;
-                        else
-                            break;
+                        if (line.StartsWith("Mode:"))
+                        {
+                            if (line == "Mode: 3")
+                                phase++;
+                            else
+                                break;
+                        }
                     }
-                }
-                // Check if it's 10k
-                else if (phase == 1)
-                {
-                    if (line.StartsWith("CircleSize:"))
+                    // Check if it's 10k
+                    else if (phase == 1)
                     {
-                        if (line == "CircleSize:10")
-                            phase++;
-                        else
-                            break;
+                        if (line.StartsWith("CircleSize:"))
+                        {
+                            if (line == "CircleSize:10")
+                                phase++;
+                            else
+                                break;
+                        }
                     }
-                }
-                // Wait for hitobjects section
-                else if (phase == 2)
-                {
-                    if (line == "[HitObjects]")
+                    // Wait for hitobjects section
+                    else if (phase == 2)
+                    {
+                        if (line == "[HitObjects]")
+                            phase++;
+                    }
+                    // Check if there are 10 or more hit objects
+                    else if (phase == 3)
+                    {
+                        if (line == "")
+                            break;
+
+                        if (!int.TryParse(line.Split(',')[2], out firstTime))
+                            continue;
+
                         phase++;
-                }
-                // Check if there are 10 or more hit objects
-                else if (phase == 3)
-                {
-                    if (line == "")
-                        break;
+                    }
+                    else if (phase == 4)
+                    {
+                        if (line == "")
+                            break;
 
-                    if (!int.TryParse(line.Split(',')[2], out firstTime))
-                        continue;
+                        if (!int.TryParse(line.Split(',')[2], out int time))
+                            continue;
 
-                    phase++;
-                }
-                else if (phase == 4)
-                {
-                    if (line == "")
-                        break;
-
-                    if (!int.TryParse(line.Split(',')[2], out int time))
-                        continue;
-
-                    if ((time - firstTime) >= 15000)
-                        return true;
+                        if ((time - firstTime) >= 15000)
+                            return true;
+                    }
                 }
             }
 
@@ -290,8 +291,8 @@ namespace Lost_10K_Finder
 
 
         /// <summary>
-        /// Tells the user if any maps were found.
-        /// And if so, which ones and where to find them.
+        /// Tell the user if any maps were found
+        /// And if so, which ones and where to find them
         /// </summary>
         static string CreateEndMessage(List<string> lost10kMapPaths)
         {
@@ -314,7 +315,7 @@ namespace Lost_10K_Finder
 
 
         /// <summary>
-        /// Displays the given message and waits for any input before closing the program.
+        /// Display the given message and wait for any input before closing the program
         /// </summary>
         static void End(string message)
         {
