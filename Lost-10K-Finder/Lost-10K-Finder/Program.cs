@@ -93,7 +93,7 @@ namespace Lost_10K_Finder
                 {
                     try
                     {
-                        listStrings[i] = webClient.DownloadString($"https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/map%20lists/{ lists[i] }.txt");
+                        listStrings[i] = webClient.DownloadString($"https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/Assets/Lists/{ lists[i] }.txt");
                     }
                     catch (Exception)
                     {
@@ -105,7 +105,7 @@ namespace Lost_10K_Finder
             {
                 for (int i = 0; i < lists.Length; i++)
                 {
-                    listStrings[i] = File.ReadAllText($@"..\..\..\map lists\{ lists[i] }.txt");
+                    listStrings[i] = File.ReadAllText($@"..\..\..\..\Assets\Lists\{ lists[i] }.txt");
                 }
             }
 
