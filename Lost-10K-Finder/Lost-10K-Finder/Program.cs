@@ -113,7 +113,7 @@ namespace Lost_10K_Finder
             HashSet<string> knownMaps = new HashSet<string>();
             for (int i = 0; i < listStrings.Length; i++)
             {
-                string[] lines = new string[listStrings.Length];
+                string[] lines;
                 if (useServerMapLists)
                 {
                     lines = listStrings[i].Split('\n');
