@@ -11,6 +11,9 @@ namespace _10K_Finder_Utils
 {
     class Program
     {
+        private static readonly string outputPath = @"..\..\..\..\Output\";
+
+
         static void Main(string[] args)
         {
             Stopwatch watch = new Stopwatch();
@@ -65,7 +68,7 @@ namespace _10K_Finder_Utils
                 hashes.Add(GetDirHash(mapPath, osuFilePaths));
             }
 
-            File.WriteAllLines("hashes.txt", hashes);
+            File.WriteAllLines(outputPath + "hashes.txt", hashes);
         }
 
 
@@ -141,7 +144,7 @@ namespace _10K_Finder_Utils
             }
 
             if (invalid.Count != 0)
-                File.WriteAllLines("noCols.txt", invalid);
+                File.WriteAllLines(outputPath + "noCols.txt", invalid);
         }
 
 
@@ -216,13 +219,13 @@ namespace _10K_Finder_Utils
             }
 
             if (noOsu.Count != 0)
-                File.WriteAllLines("noOsu.txt", noOsu.ToArray());
+                File.WriteAllLines(outputPath + "noOsu.txt", noOsu.ToArray());
             if (no10k.Count != 0)
-                File.WriteAllLines("no10k.txt", no10k.ToArray());
+                File.WriteAllLines(outputPath + "no10k.txt", no10k.ToArray());
             if (noAudio.Count != 0)
-                File.WriteAllLines("noAudio.txt", noAudio.ToArray());
+                File.WriteAllLines(outputPath + "noAudio.txt", noAudio.ToArray());
             if (noHitobjects.Count != 0)
-                File.WriteAllLines("noHitobjects.txt", noHitobjects.ToArray());
+                File.WriteAllLines(outputPath + "noHitobjects.txt", noHitobjects.ToArray());
         }
 
 
@@ -306,7 +309,7 @@ namespace _10K_Finder_Utils
                 //    ids3.Add(id2);
             }
 
-            File.WriteAllLines(path + @"difference.txt", ids1);
+            File.WriteAllLines(outputPath + "difference.txt", ids1);
         }
 
 
@@ -333,7 +336,7 @@ namespace _10K_Finder_Utils
                 }
             }
 
-            File.WriteAllLines("dupes.txt", dupes);
+            File.WriteAllLines(outputPath + "dupes.txt", dupes);
         }
 
 
@@ -397,7 +400,7 @@ namespace _10K_Finder_Utils
                 }
             }
 
-            File.WriteAllLines(@"E:\Media\Downloads\result.txt", result);
+            File.WriteAllLines(outputPath + "result.txt", result);
         }
     }
 }

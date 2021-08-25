@@ -23,13 +23,14 @@ namespace Lost_10K_Finder
         private static void Main(string[] args)
         {
             Console.Write("Downloading lists of known map ids, names and hashes... ");
-            List<string> knownkMapIds = GetKnownMaps(new string[] { "osu-ids", "search-ids" }, KnownMapsType.Id);
+            List<string> knownMapIds = GetKnownMaps(new string[] { "osu-ids", "search-ids" }, KnownMapsType.Id);
             List<string> knownMapNames = GetKnownMaps(new string[] { "osu-names", "search-names" }, KnownMapsType.Name);
             List<string> knownMapHashes = GetKnownMaps(new string[] { "pack-hashes", "rejected-hashes", "pending-hashes" }, KnownMapsType.Hash);
             Console.WriteLine("complete\n");
 
             string songsPath = GetSongsPath();
-            Console.WriteLine();
+
+            Console.WriteLine("\n Searching... This may take a while");
 
             List<string> lost10kMapPaths = new List<string>();
             string[] mapPaths = Directory.GetDirectories(songsPath, "*", SearchOption.AllDirectories);
@@ -65,7 +66,7 @@ namespace Lost_10K_Finder
                 if (!HasValid10kOsuFile(osuFilePaths))
                     continue;
 
-                if (!IsKnownMap(mapPath, osuFilePaths, knownkMapIds, knownMapNames, knownMapHashes))
+                if (!IsKnownMap(mapPath, osuFilePaths, knownMapIds, knownMapNames, knownMapHashes))
                     lost10kMapPaths.Add(mapName);
             }
 
@@ -112,7 +113,17 @@ namespace Lost_10K_Finder
             HashSet<string> knownMaps = new HashSet<string>();
             for (int i = 0; i < listStrings.Length; i++)
             {
-                foreach (string line in listStrings[i].Split('\n'))
+                string[] lines = new string[listStrings.Length];
+                if (useServerMapLists)
+                {
+                    lines = listStrings[i].Split('\n');
+                }
+                else
+                {
+                    lines = listStrings[i].Split(new char[] { '\r', '\n' });
+                }
+
+                foreach (string line in lines)
                 {
                     string fixedLine = line;
                     if (knownMapsType == KnownMapsType.Hash)
