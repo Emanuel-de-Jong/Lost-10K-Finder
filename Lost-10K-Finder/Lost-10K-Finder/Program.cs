@@ -79,55 +79,51 @@ namespace Lost_10K_Finder
 
 
         private static readonly bool useServerMapLists = true;
+        private static readonly string githubUrl = "https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/Assets/Lists/";
         /// <summary>
         /// Get the given lists from github and combine them.
         /// </summary>
         private static List<string> GetKnownMaps(string[] lists, KnownMapsType knownMapsType)
         {
-            string[] listStrings = new string[lists.Length];
+            List<string[]> listLines = new List<string[]>();
 
             if (useServerMapLists)
             {
                 WebClient webClient = new WebClient();
 
-                for (int i = 0; i < lists.Length; i++)
+                foreach (string list in lists)
                 {
                     try
                     {
-                        listStrings[i] = webClient.DownloadString($"https://raw.githubusercontent.com/Emanuel-de-Jong/Lost-10K-Finder/main/Assets/Lists/{ lists[i] }.txt");
+                        listLines.Add(webClient.DownloadString(githubUrl + list + ".txt").Split('\n'));
                     }
                     catch (Exception)
                     {
-                        End($"\n{ lists[i] } couldn't be read from the server.\nPlease check your internet connection.");
+                        End($"\n{ list } couldn't be read from the server.\nPlease check your internet connection.");
                     }
                 }
             }
             else
             {
-                for (int i = 0; i < lists.Length; i++)
+                foreach(string list in lists)
                 {
-                    listStrings[i] = File.ReadAllText($@"..\..\..\..\Assets\Lists\{ lists[i] }.txt");
+                    listLines.Add(File.ReadAllLines($@"..\..\..\..\Assets\Lists\{ list }.txt"));
                 }
             }
 
             HashSet<string> knownMaps = new HashSet<string>();
-            for (int i = 0; i < listStrings.Length; i++)
+            foreach (string[] lines in listLines)
             {
-                string[] lines;
-                if (useServerMapLists)
-                {
-                    lines = listStrings[i].Split('\n');
-                }
-                else
-                {
-                    lines = listStrings[i].Split(new char[] { '\r', '\n' });
-                }
-
                 foreach (string line in lines)
                 {
                     string fixedLine = line;
+
                     if (knownMapsType == KnownMapsType.Hash)
+                    {
                         fixedLine = line.Split(' ')[0];
+                        if (fixedLine == "")
+                            continue;
+                    }
 
                     knownMaps.Add(fixedLine);
                 }
