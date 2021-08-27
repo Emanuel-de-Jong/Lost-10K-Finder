@@ -19,7 +19,8 @@ namespace _10K_Finder_Utils
             Stopwatch watch = new Stopwatch();
             watch.Start();
 
-            HashPaths(@"E:\Coding\Repos\Lost-10K-Finder Resources\pending");
+            HashPaths(Console.ReadLine());
+            //HashPaths(@"E:\Coding\Repos\Lost-10K-Finder Resources\pending");
             //SaveDupes(@"E:\Coding\Other\osu collections\Non-10K-Finder\bin\Debug\net5.0\hashes.txt");
             //DeleteFromPathFile(@"E:\Coding\Repos\Lost-10K-Finder Resources\pending\dupes.txt");
 
@@ -65,7 +66,9 @@ namespace _10K_Finder_Utils
                 if (osuFilePaths.Count == 0)
                     continue;
 
-                hashes.Add(GetDirHash(mapPath, osuFilePaths));
+                string hash = GetDirHash(mapPath, osuFilePaths);
+                Console.WriteLine(hash);
+                hashes.Add(hash);
             }
 
             File.WriteAllLines(outputPath + "hashes.txt", hashes);
