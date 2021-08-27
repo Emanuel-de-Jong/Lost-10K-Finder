@@ -16,6 +16,8 @@ namespace _10K_Finder_Utils
 
         static void Main(string[] args)
         {
+            Directory.CreateDirectory(outputPath);
+
             Stopwatch watch = new Stopwatch();
             watch.Start();
 
