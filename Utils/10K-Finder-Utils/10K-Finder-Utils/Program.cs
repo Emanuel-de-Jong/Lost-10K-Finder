@@ -21,7 +21,7 @@ namespace _10K_Finder_Utils
             Stopwatch watch = new Stopwatch();
             watch.Start();
 
-            HashPaths(Console.ReadLine());
+            GetMapperStats(@"D:\Other\charts\osu\10k");
             //HashPaths(@"E:\Coding\Repos\Lost-10K-Finder Resources\pending");
             //SaveDupes(@"E:\Coding\Other\osu collections\Non-10K-Finder\bin\Debug\net5.0\hashes.txt");
             //DeleteFromPathFile(@"E:\Coding\Repos\Lost-10K-Finder Resources\pending\dupes.txt");
@@ -36,7 +36,89 @@ namespace _10K_Finder_Utils
 
 
 
+        private class Mapper
+        {
+            public string Name;
+            public int Sets = 0;
+            public int Maps = 0;
+
+            public Mapper(string name)
+            {
+                Name = name;
+            }
+        }
+
+
         private static readonly Regex checkAutomap = new Regex(@".osu.[0-9]*a[0-9]+.osu$", RegexOptions.Compiled);
+        static void GetMapperStats(string path)
+        {
+            Dictionary<string, Mapper> mappers = new Dictionary<string, Mapper>();
+
+            string[] mapPaths = Directory.GetDirectories(path, "*", SearchOption.AllDirectories);
+            foreach (string mapPath in mapPaths)
+            {
+                List<string> osuPaths = new List<string>();
+                foreach (string filePath in Directory.GetFiles(mapPath, "*.osu"))
+                {
+                    if (checkAutomap.IsMatch(filePath))
+                        continue;
+
+                    if (!File.Exists(filePath))
+                        continue;
+
+                    osuPaths.Add(filePath);
+                }
+
+                if (osuPaths.Count == 0)
+                    continue;
+
+                Console.WriteLine(mapPath.Substring(path.Length + 1));
+
+                HashSet<string> mappersInSet = new HashSet<string>();
+                foreach (string osuPath in osuPaths)
+                {
+                    string name = File.ReadAllLines(osuPath).SingleOrDefault(l => l.StartsWith("Creator:")).Substring(8);
+
+                    Mapper mapper;
+                    if (!mappers.ContainsKey(name))
+                    {
+                        mapper = new Mapper(name);
+                        mappers[name] = mapper;
+                    }
+                    else
+                    {
+                        mapper = mappers[name];
+                    }
+
+                    mapper.Maps++;
+
+                    if (!mappersInSet.Contains(name))
+                    {
+                        mappersInSet.Add(name);
+                        mapper.Sets++;
+                    }
+                }
+            }
+
+            Console.Clear();
+
+            List<string> mappersFormatted = new List<string>();
+            foreach (KeyValuePair<string, Mapper> pair in mappers.OrderByDescending(key => key.Value.Maps))
+            {
+                Mapper mapper = pair.Value;
+
+                string line = $"{ mapper.Name }\n  Maps: { mapper.Maps }\n  Sets: { mapper.Sets }\n";
+                Console.WriteLine(line);
+                mappersFormatted.Add(line);
+            }
+
+            File.WriteAllLines(outputPath + "mappers.txt", mappersFormatted);
+        }
+
+
+
+
+
         static void HashPaths(string path)
         {
             List<string> hashes = new List<string>();
