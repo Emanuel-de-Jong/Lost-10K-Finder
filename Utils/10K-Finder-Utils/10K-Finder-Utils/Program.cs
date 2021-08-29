@@ -56,11 +56,20 @@ namespace _10K_Finder_Utils
                 string songPath = songsPath + relativeSongPath;
                 if (Directory.Exists(songPath))
                 {
-                    Console.WriteLine("Copying " + relativeSongPath);
-
                     string newSongPath = lostMapsPath + Path.GetFileName(relativeSongPath);
                     if (!Directory.Exists(newSongPath))
+                    {
+                        Console.WriteLine("Copying: " + relativeSongPath);
                         FileSystem.CopyDirectory(songPath, lostMapsPath + Path.GetFileName(relativeSongPath));
+                    }
+                    else
+                    {
+                        Console.WriteLine("Already copied: " + relativeSongPath);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Can't find: " + relativeSongPath);
                 }
             }
 
