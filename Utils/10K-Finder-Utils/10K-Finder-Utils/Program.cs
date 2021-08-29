@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualBasic.FileIO;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -21,15 +22,49 @@ namespace _10K_Finder_Utils
             Stopwatch watch = new Stopwatch();
             watch.Start();
 
-            GetMapperStats(@"D:\Other\charts\osu\10k");
+            CopyMaps();
+            //GetMapperStats(@"D:\Other\charts\osu\10k");
             //HashPaths(@"E:\Coding\Repos\Lost-10K-Finder Resources\pending");
             //SaveDupes(@"E:\Coding\Other\osu collections\Non-10K-Finder\bin\Debug\net5.0\hashes.txt");
             //DeleteFromPathFile(@"E:\Coding\Repos\Lost-10K-Finder Resources\pending\dupes.txt");
 
             watch.Stop();
-            Console.WriteLine(watch.ElapsedMilliseconds);
+            Console.WriteLine($"\nProgram duration: { watch.ElapsedMilliseconds } ms");
 
             Console.ReadKey();
+        }
+
+
+
+
+
+        static void CopyMaps()
+        {
+            Console.Write("What is the path to your \"lost maps.txt\"?\nYour path: ");
+            string filePath = Console.ReadLine();
+
+            Console.Write("\nWhat is the path to your songs folder?\nYour path: ");
+            string songsPath = Console.ReadLine() + @"\";
+
+            Console.WriteLine();
+
+            string lostMapsPath = Directory.GetCurrentDirectory() + @"\lost maps\";
+            Directory.CreateDirectory(lostMapsPath);
+
+            foreach (string relativeSongPath in File.ReadLines(filePath))
+            {
+                string songPath = songsPath + relativeSongPath;
+                if (Directory.Exists(songPath))
+                {
+                    Console.WriteLine("Copying " + relativeSongPath);
+
+                    string newSongPath = lostMapsPath + Path.GetFileName(relativeSongPath);
+                    if (!Directory.Exists(newSongPath))
+                        FileSystem.CopyDirectory(songPath, lostMapsPath + Path.GetFileName(relativeSongPath));
+                }
+            }
+
+            Console.WriteLine("\nDONE!");
         }
 
 
@@ -54,7 +89,7 @@ namespace _10K_Finder_Utils
         {
             Dictionary<string, Mapper> mappers = new Dictionary<string, Mapper>();
 
-            string[] mapPaths = Directory.GetDirectories(path, "*", SearchOption.AllDirectories);
+            string[] mapPaths = Directory.GetDirectories(path, "*", System.IO.SearchOption.AllDirectories);
             foreach (string mapPath in mapPaths)
             {
                 List<string> osuPaths = new List<string>();
@@ -123,7 +158,7 @@ namespace _10K_Finder_Utils
         {
             List<string> hashes = new List<string>();
 
-            string[] mapPaths = Directory.GetDirectories(path, "*", SearchOption.AllDirectories);
+            string[] mapPaths = Directory.GetDirectories(path, "*", System.IO.SearchOption.AllDirectories);
             foreach (string mapPath in mapPaths)
             {
                 if (!Directory.Exists(mapPath))
@@ -189,7 +224,7 @@ namespace _10K_Finder_Utils
             List<string> invalid = new List<string>();
             HashSet<string> cols = new HashSet<string>();
 
-            string[] dirs = Directory.GetDirectories(path, "*", SearchOption.AllDirectories);
+            string[] dirs = Directory.GetDirectories(path, "*", System.IO.SearchOption.AllDirectories);
             foreach (string dir in dirs)
             {
                 string[] files = Directory.GetFiles(dir, "*.osu");
@@ -254,7 +289,7 @@ namespace _10K_Finder_Utils
             bool hasOsu, hasAudio;
             string format;
             string[] files;
-            string[] dirs = Directory.GetDirectories(path, "*", SearchOption.AllDirectories);
+            string[] dirs = Directory.GetDirectories(path, "*", System.IO.SearchOption.AllDirectories);
             foreach (string dir in dirs)
             {
                 if (Directory.GetFiles(dir, "*.osu").Length == 0)
