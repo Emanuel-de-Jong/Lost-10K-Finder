@@ -43,33 +43,29 @@ namespace _10K_Finder_Utils
             Console.Write("What is the path to your \"lost maps.txt\"?\nYour path: ");
             string filePath = Console.ReadLine();
 
-            Console.Write("\nWhat is the path to your songs folder?\nYour path: ");
-            string songsPath = Console.ReadLine() + @"\";
-
             Console.WriteLine();
 
             string lostMapsPath = Directory.GetCurrentDirectory() + @"\lost maps\";
             Directory.CreateDirectory(lostMapsPath);
 
-            foreach (string relativeSongPath in File.ReadLines(filePath))
+            foreach (string mapPath in File.ReadLines(filePath))
             {
-                string songPath = songsPath + relativeSongPath;
-                if (Directory.Exists(songPath))
+                if (Directory.Exists(mapPath))
                 {
-                    string newSongPath = lostMapsPath + Path.GetFileName(relativeSongPath);
-                    if (!Directory.Exists(newSongPath))
+                    string newMapPath = lostMapsPath + Path.GetFileName(mapPath);
+                    if (!Directory.Exists(newMapPath))
                     {
-                        Console.WriteLine("Copying: " + relativeSongPath);
-                        FileSystem.CopyDirectory(songPath, lostMapsPath + Path.GetFileName(relativeSongPath));
+                        Console.WriteLine("Copying: " + mapPath);
+                        FileSystem.CopyDirectory(mapPath, newMapPath);
                     }
                     else
                     {
-                        Console.WriteLine("Already copied: " + relativeSongPath);
+                        Console.WriteLine("Already copied: " + mapPath);
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Can't find: " + relativeSongPath);
+                    Console.WriteLine("Can't find: " + mapPath);
                 }
             }
 
