@@ -22,8 +22,7 @@ namespace _10K_Finder_Utils
             Stopwatch watch = new Stopwatch();
             watch.Start();
 
-            CopyMaps();
-            //GetMapperStats(@"D:\Other\charts\osu\10k");
+            GetMapperStats(@"D:\Other\charts\osu\10k");
             //HashPaths(@"E:\Coding\Repos\Lost-10K-Finder Resources\pending");
             //SaveDupes(@"E:\Coding\Other\osu collections\Non-10K-Finder\bin\Debug\net5.0\hashes.txt");
             //DeleteFromPathFile(@"E:\Coding\Repos\Lost-10K-Finder Resources\pending\dupes.txt");
@@ -32,44 +31,6 @@ namespace _10K_Finder_Utils
             Console.WriteLine($"\nProgram duration: { watch.ElapsedMilliseconds } ms");
 
             Console.ReadKey();
-        }
-
-
-
-
-
-        static void CopyMaps()
-        {
-            Console.Write("What is the path to your \"lost maps.txt\"?\nYour path: ");
-            string filePath = Console.ReadLine();
-
-            Console.WriteLine();
-
-            string lostMapsPath = Directory.GetCurrentDirectory() + @"\lost maps\";
-            Directory.CreateDirectory(lostMapsPath);
-
-            foreach (string mapPath in File.ReadLines(filePath))
-            {
-                if (Directory.Exists(mapPath))
-                {
-                    string newMapPath = lostMapsPath + Path.GetFileName(mapPath);
-                    if (!Directory.Exists(newMapPath))
-                    {
-                        Console.WriteLine("Copying: " + mapPath);
-                        FileSystem.CopyDirectory(mapPath, newMapPath);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Already copied: " + mapPath);
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Can't find: " + mapPath);
-                }
-            }
-
-            Console.WriteLine("\nDONE!");
         }
 
 
@@ -89,7 +50,7 @@ namespace _10K_Finder_Utils
         }
 
 
-        private static readonly Regex checkAutomap = new Regex(@".osu.[0-9]*a[0-9]+.osu$", RegexOptions.Compiled);
+        private static readonly Regex checkAutomap = new Regex(@"\.osu\.[0-9]*a[0-9]+\.osu$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         static void GetMapperStats(string path)
         {
             Dictionary<string, Mapper> mappers = new Dictionary<string, Mapper>();
@@ -100,7 +61,7 @@ namespace _10K_Finder_Utils
                 List<string> osuPaths = new List<string>();
                 foreach (string filePath in Directory.GetFiles(mapPath, "*.osu"))
                 {
-                    if (checkAutomap.IsMatch(filePath))
+                    if (checkAutomap.IsMatch(filePath) || Path.GetFileName(filePath).Contains("[A10K "))
                         continue;
 
                     if (!File.Exists(filePath))

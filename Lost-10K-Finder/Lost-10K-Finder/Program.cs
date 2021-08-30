@@ -19,7 +19,7 @@ namespace Lost_10K_Finder
         }
 
 
-        private static readonly Regex checkAutomap = new Regex(@".osu.[0-9]*a[0-9]+.osu$", RegexOptions.Compiled);
+        private static readonly Regex checkAutomap = new Regex(@"\.osu\.[0-9]*a[0-9]+\.osu$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         private static void Main(string[] args)
         {
             Console.Write("Downloading lists of known map ids, names and hashes... ");
@@ -45,7 +45,7 @@ namespace Lost_10K_Finder
                 List<string> osuFilePaths = new List<string>();
                 foreach (string filePath in Directory.GetFiles(mapPath, "*.osu"))
                 {
-                    if (checkAutomap.IsMatch(filePath) || filePath.Contains("[A10K "))
+                    if (checkAutomap.IsMatch(filePath) || Path.GetFileName(filePath).Contains("[A10K "))
                         continue;
 
                     if (!File.Exists(filePath))
