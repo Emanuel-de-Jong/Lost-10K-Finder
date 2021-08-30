@@ -150,7 +150,7 @@ namespace Lost_10K_Finder
             }
             else
             {
-                Console.WriteLine("Please paste the path to your songs folder and press enter.");
+                Console.WriteLine("Please paste the path to the folder with your osu maps.");
                 Console.WriteLine(@"Normally it's at: C:\Users\YOURUSERNAME\AppData\Local\osu!\Songs");
                 Console.Write("Path: ");
                 string songsPath = Console.ReadLine().Trim();
