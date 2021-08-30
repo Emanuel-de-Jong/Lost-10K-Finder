@@ -41,7 +41,7 @@ namespace Lost_10K_Copier
                 }
             }
 
-            End("\nDONE!");
+            End("\nThe maps have been copied to the \"lost maps\" folder.");
         }
 
 
@@ -96,8 +96,8 @@ namespace Lost_10K_Copier
 
                     Console.Write($"Do you want to copy the maps in: { lostMapsFilePaths[0] } (yes/no)\nYour answer: ");
 
-                    string answer = Console.ReadLine();
-                    if (answer.ToLower().Contains("yes"))
+                    string answer = Console.ReadLine().Trim().ToLower();
+                    if (answer.Contains("yes") || answer == "y")
                         return lostMapsFilePaths[0];
 
                     Console.WriteLine();
