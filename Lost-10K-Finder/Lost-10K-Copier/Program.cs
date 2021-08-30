@@ -2,9 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Lost_10K_Copier
 {
@@ -13,6 +10,8 @@ namespace Lost_10K_Copier
         static void Main(string[] args)
         {
             string lostMapsFilePath = GetLostMapsFilePath();
+
+            Console.WriteLine();
 
             string lostMapsPath = Directory.GetCurrentDirectory() + @"\lost maps\";
             Directory.CreateDirectory(lostMapsPath);

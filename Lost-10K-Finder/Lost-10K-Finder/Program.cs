@@ -45,7 +45,7 @@ namespace Lost_10K_Finder
                 List<string> osuFilePaths = new List<string>();
                 foreach (string filePath in Directory.GetFiles(mapPath, "*.osu"))
                 {
-                    if (checkAutomap.IsMatch(filePath))
+                    if (checkAutomap.IsMatch(filePath) || filePath.Contains("[A10K "))
                         continue;
 
                     if (!File.Exists(filePath))
