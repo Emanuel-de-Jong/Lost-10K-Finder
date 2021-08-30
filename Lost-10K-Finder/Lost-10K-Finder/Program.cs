@@ -164,8 +164,8 @@ namespace Lost_10K_Finder
 
 
         // Check for " " + ("[no video]" || "(digit)")
-        // Every " " can be an "_"
         // Do this check 1..* times
+        // Every " " can be an "_"
         private static readonly Regex filterName = new Regex(@"([ _](\[no[ _]video\]|\([0-9]+\)))+", RegexOptions.Compiled);
         /// <summary>
         /// Check if the given map is uploaded, in the pack, or rejected already
@@ -193,8 +193,15 @@ namespace Lost_10K_Finder
             }
 
             // Check hash
-            if (knownMapHashes.Contains(GetDirHash(mapPath, osuFilePaths)))
+            string mapHash = GetDirHash(mapPath, osuFilePaths);
+            if (knownMapHashes.Contains(mapHash))
+            {
                 return true;
+            }
+            else
+            {
+                knownMapHashes.Add(mapHash);
+            }
 
             return false;
         }
