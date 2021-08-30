@@ -32,7 +32,7 @@ namespace Lost_10K_Finder
 
             Console.WriteLine("\n Searching... This may take a while");
 
-            List<string> lost10kMapPaths = new List<string>();
+            Dictionary<string, string> lost10kMapPaths = new Dictionary<string, string>();
             string[] mapPaths = Directory.GetDirectories(songsPath, "*", SearchOption.AllDirectories);
             foreach (string mapPath in mapPaths)
             {
@@ -60,21 +60,21 @@ namespace Lost_10K_Finder
                 if (osuFilePaths.Count == 0)
                     continue;
 
-                string mapName = mapPath.Substring(songsPath.Length + 1);
-                Console.WriteLine(mapName);
+                string relativeMapPath = mapPath.Substring(songsPath.Length + 1);
+                Console.WriteLine(relativeMapPath);
 
                 if (!HasValid10kOsuFile(osuFilePaths))
                     continue;
 
                 if (!IsKnownMap(mapPath, osuFilePaths, knownMapIds, knownMapNames, knownMapHashes))
-                    lost10kMapPaths.Add(mapName);
+                    lost10kMapPaths[relativeMapPath] = mapPath;
             }
 
             if (lost10kMapPaths.Count != 0)
-                File.WriteAllLines("lost maps.txt", lost10kMapPaths);
+                File.WriteAllLines("lost maps.txt", lost10kMapPaths.Values);
 
             Console.Clear();
-            End(CreateEndMessage(lost10kMapPaths));
+            End(CreateEndMessage(lost10kMapPaths.Keys.ToArray()));
         }
 
 
@@ -322,10 +322,10 @@ namespace Lost_10K_Finder
         /// Tell the user if any maps were found
         /// And if so, which ones and where to find them
         /// </summary>
-        private static string CreateEndMessage(List<string> lost10kMapPaths)
+        private static string CreateEndMessage(string[] lost10kMapPaths)
         {
             string endMessage;
-            if (lost10kMapPaths.Count == 0)
+            if (lost10kMapPaths.Length == 0)
             {
                 endMessage = "No lost maps were found";
             }
