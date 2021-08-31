@@ -91,6 +91,13 @@ namespace Lost_10K_Finder
             {
                 WebClient webClient = new WebClient();
 
+                ServicePointManager.Expect100Continue = true;
+                ServicePointManager.SecurityProtocol =
+                    SecurityProtocolType.Tls   |
+                    SecurityProtocolType.Tls11 |
+                    SecurityProtocolType.Tls12 |
+                    SecurityProtocolType.Ssl3;
+
                 foreach (string list in lists)
                 {
                     try
@@ -241,7 +248,7 @@ namespace Lost_10K_Finder
                     hasher.TransformBlock(contentBytes, 0, contentBytes.Length, contentBytes, 0);
                 }
 
-                hasher.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+                hasher.TransformFinalBlock(new byte[0], 0, 0);
 
                 return BitConverter.ToString(hasher.Hash).Replace("-", "");
             }
