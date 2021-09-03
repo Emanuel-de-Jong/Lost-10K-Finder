@@ -22,8 +22,8 @@ namespace _10K_Finder_Utils
             Stopwatch watch = new Stopwatch();
             watch.Start();
 
-            GetMapperStats(@"D:\Other\charts\osu\10k");
-            //HashPaths(@"E:\Coding\Repos\Lost-10K-Finder Resources\pending");
+            //GetMapperStats(@"D:\Other\charts\osu\10k");
+            HashPaths(@"E:\Coding\Repos\Lost-10K-Finder Resources\pending-2\");
             //SaveDupes(@"E:\Coding\Other\osu collections\Non-10K-Finder\bin\Debug\net5.0\hashes.txt");
             //DeleteFromPathFile(@"E:\Coding\Repos\Lost-10K-Finder Resources\pending\dupes.txt");
 
