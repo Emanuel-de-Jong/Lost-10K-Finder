@@ -5,8 +5,8 @@ The Complete 10K Mania Pack: https://drive.google.com/drive/folders/1yIq0NoHcCqp
 
 10k server: https://discord.gg/PwzcUzk
 
-**Active Development:** <br>
-**Last Change:** <br>
+**Active Development:** 2021-04-06 - 2021-08-31<br>
+**Last Change:** 2021-08-31<br>
 
 | | |
 | :---: | :---: |
